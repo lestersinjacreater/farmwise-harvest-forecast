@@ -57,7 +57,7 @@ const Dashboard = () => {
                 {getGreeting()}, <span className="text-farm-leaf">{user.name}</span>
               </h1>
               <p className="text-foreground/80 animate-fade-in animate-delay-300">
-                Welcome to your FarmWise dashboard. Let's predict your crop yields today.
+                Welcome to MazaoSmart, your Kenyan crop yield prediction platform.
               </p>
             </div>
             
@@ -66,7 +66,7 @@ const Dashboard = () => {
                 !welcomeAnimation ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-20'
               }`}
             >
-              <h2 className="text-2xl font-bold mb-6">Crop Yield Prediction</h2>
+              <h2 className="text-2xl font-bold mb-6">Mazao Yield Prediction</h2>
             </div>
           </div>
           
@@ -75,7 +75,7 @@ const Dashboard = () => {
             {/* Side panel with stats and tips */}
             <div className="lg:col-span-1 space-y-6">
               <div className="glass-panel rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4">Your Farm Stats</h3>
+                <h3 className="text-xl font-bold mb-4">Your Shamba Stats</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center pb-2 border-b border-border/50">
                     <span className="text-foreground/80">Account</span>
@@ -100,16 +100,16 @@ const Dashboard = () => {
                 <h3 className="text-xl font-bold mb-4">Farming Tips</h3>
                 <ul className="space-y-3">
                   <li className="leaf-bullet text-foreground/80">
-                    Plant maize at the correct spacing (75cm x 25cm) for optimal yield.
+                    For maize in Central Kenya, plant at the onset of long rains in March-April.
                   </li>
                   <li className="leaf-bullet text-foreground/80">
-                    Apply fertilizer when the soil is moist to prevent nutrient runoff.
+                    Apply DAP fertilizer at planting time and CAN fertilizer when the maize is knee-high.
                   </li>
                   <li className="leaf-bullet text-foreground/80">
-                    Consider companion planting to reduce pest pressure naturally.
+                    Intercrop beans with maize to maximize land use and improve soil fertility.
                   </li>
                   <li className="leaf-bullet text-foreground/80">
-                    Monitor soil moisture levels regularly, especially during critical growth stages.
+                    In Western Kenya, space maize at 75cm between rows and 30cm between plants.
                   </li>
                 </ul>
               </div>
@@ -120,10 +120,18 @@ const Dashboard = () => {
                 </div>
                 <div className="p-4">
                   <p className="text-foreground/80">
-                    Prepare for the upcoming rainy season by ensuring proper drainage in your fields
-                    and securing your harvested crops in dry storage.
+                    The Kenya Meteorological Department predicts above-average rainfall in Eastern Kenya during the upcoming short rains. Plan your planting schedule accordingly.
                   </p>
                 </div>
+              </div>
+              
+              <div className="glass-panel rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-4">Project Information</h3>
+                <p className="text-foreground/80 mb-4">
+                  This application is a final year software engineering project from Kirinyaga University, demonstrating 
+                  how technology can be applied to Kenyan agriculture.
+                </p>
+                <a href="/project-info" className="text-farm-leaf hover:underline">View project details →</a>
               </div>
             </div>
             

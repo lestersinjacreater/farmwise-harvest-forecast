@@ -28,7 +28,8 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const cropTypes = ['Maize', 'Beans', 'Potatoes', 'Coffee', 'Tea', 'Tomatoes', 'Kale', 'Wheat', 'Rice'];
   const counties = [
     'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kiambu', 'Machakos', 
-    'Nyeri', 'Meru', 'Kakamega', 'Bungoma', 'Kisii', 'Embu', 'Kitui', 'Makueni'
+    'Nyeri', 'Meru', 'Kakamega', 'Bungoma', 'Kisii', 'Embu', 'Kitui', 'Makueni',
+    'Kirinyaga', 'Murang\'a', 'Laikipia', 'Nyandarua', 'Baringo', 'Bomet', 'Kajiado'
   ];
   const soilTypes = ['Loam', 'Clay', 'Sandy', 'Silt', 'Peat', 'Chalky'];
   const irrigationMethods = ['Drip', 'Sprinkler', 'Flood', 'Manual', 'None'];
@@ -54,8 +55,27 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     // Simulate API call
     setIsLoading(true);
     setTimeout(() => {
-      // Generate a random "prediction"
-      const predictions = {
+      // Generate predictions tailored for Kenyan regions
+      const predictions: Record<string, Record<string, { base: number; variance: number; unit: string }>> = {
+        "Kirinyaga": {
+          "Maize": { base: 2500, variance: 500, unit: "kg/hectare" },
+          "Rice": { base: 6000, variance: 800, unit: "kg/hectare" },
+          "Coffee": { base: 1200, variance: 300, unit: "kg/hectare" },
+        },
+        "Meru": {
+          "Coffee": { base: 1100, variance: 250, unit: "kg/hectare" },
+          "Tea": { base: 14000, variance: 2000, unit: "kg/hectare" },
+          "Potatoes": { base: 28000, variance: 4000, unit: "kg/hectare" },
+        },
+        "Nakuru": {
+          "Wheat": { base: 4000, variance: 600, unit: "kg/hectare" },
+          "Maize": { base: 2800, variance: 400, unit: "kg/hectare" },
+          "Potatoes": { base: 26000, variance: 3800, unit: "kg/hectare" },
+        }
+      };
+      
+      // Default values if region-specific data not available
+      const defaultPredictions = {
         "Maize": { base: 2000, variance: 500, unit: "kg/hectare" },
         "Beans": { base: 1500, variance: 300, unit: "kg/hectare" },
         "Potatoes": { base: 25000, variance: 5000, unit: "kg/hectare" },
@@ -67,12 +87,40 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         "Rice": { base: 4500, variance: 900, unit: "kg/hectare" },
       };
       
-      const cropInfo = predictions[formData.cropType as keyof typeof predictions] || 
-        { base: 2000, variance: 500, unit: "kg/hectare" };
+      // Get region-specific prediction if available
+      const regionData = predictions[formData.location as keyof typeof predictions];
+      let cropInfo;
+      
+      if (regionData && regionData[formData.cropType as keyof typeof regionData]) {
+        cropInfo = regionData[formData.cropType as keyof typeof regionData];
+      } else {
+        cropInfo = defaultPredictions[formData.cropType as keyof typeof defaultPredictions] || 
+          { base: 2000, variance: 500, unit: "kg/hectare" };
+      }
+      
+      // Adjust yield based on soil type and irrigation
+      let soilFactor = 1.0;
+      switch (formData.soilType) {
+        case 'Loam': soilFactor = 1.2; break;
+        case 'Clay': soilFactor = 0.9; break;
+        case 'Sandy': soilFactor = 0.8; break;
+        case 'Silt': soilFactor = 1.1; break;
+        case 'Peat': soilFactor = 1.3; break;
+        case 'Chalky': soilFactor = 0.7; break;
+      }
+      
+      let irrigationFactor = 1.0;
+      switch (formData.irrigationMethod) {
+        case 'Drip': irrigationFactor = 1.3; break;
+        case 'Sprinkler': irrigationFactor = 1.2; break; 
+        case 'Flood': irrigationFactor = 1.1; break;
+        case 'Manual': irrigationFactor = 0.9; break;
+        case 'None': irrigationFactor = 0.7; break;
+      }
       
       const landSizeNum = parseFloat(formData.landSize);
       
-      const yieldPerHectare = Math.round(cropInfo.base + (Math.random() * cropInfo.variance * 2 - cropInfo.variance));
+      const yieldPerHectare = Math.round((cropInfo.base + (Math.random() * cropInfo.variance * 2 - cropInfo.variance)) * soilFactor * irrigationFactor);
       const totalYield = Math.round(yieldPerHectare * landSizeNum);
       
       onPredict({ 
@@ -82,7 +130,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       
       toast({
         title: "Prediction Complete",
-        description: "We've analyzed your farm data and generated a yield prediction."
+        description: "We've analyzed your farm data using Kenya-specific agricultural models."
       });
       
       setIsLoading(false);
