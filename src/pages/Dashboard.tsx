@@ -97,10 +97,10 @@ const Dashboard = () => {
                     <span className="text-foreground/80">Email</span>
                     <span>{user.email}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                  {/* <div className="flex justify-between items-center pb-2 border-b border-border/50">
                     <span className="text-foreground/80">Predictions</span>
                     <span>{prediction ? '1' : '0'}</span>
-                  </div>
+                  </div> */}
                   <div className="flex justify-between items-center">
                     <span className="text-foreground/80">Member Since</span>
                     <span>{new Date().toLocaleDateString()}</span>
