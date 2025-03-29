@@ -76,7 +76,7 @@ const About = () => {
               {[
                 {
                   name: 'LESTER SINJA',
-                  registration: 'PA106/G/15053/21',
+                  role: 'PA106/G/15053/21',
                   bio: 'Final year softaware enginnering student at kirinyaga university .',
                 },
                 {
