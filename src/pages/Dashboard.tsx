@@ -131,7 +131,7 @@ const Dashboard = () => {
                   This application is a final year software engineering project from Kirinyaga University, demonstrating 
                   how technology can be applied to Kenyan agriculture.
                 </p>
-                <a href="/project-info" className="text-farm-leaf hover:underline">View project details →</a>
+                <a href="/About" className="text-farm-leaf hover:underline">View project details →</a>
               </div>
             </div>
             

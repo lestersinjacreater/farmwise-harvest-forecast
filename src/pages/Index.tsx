@@ -147,7 +147,7 @@ const Index = () => {
               </ul>
             </div>
             
-            <div>
+            {/* <div>
               <h4 className="font-semibold mb-4">Crops</h4>
               <ul className="space-y-2">
                 <li className="text-foreground/80">Maize</li>
@@ -156,13 +156,13 @@ const Index = () => {
                 <li className="text-foreground/80">Potatoes</li>
                 <li className="text-foreground/80">Beans</li>
               </ul>
-            </div>
+            </div> */}
             
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
-              <p className="text-foreground/80 mb-2">contact@farmwise.co.ke</p>
-              <p className="text-foreground/80 mb-2">+254 123 456 789</p>
-              <p className="text-foreground/80">Nairobi, Kenya</p>
+              <p className="text-foreground/80 mb-2">info@kyu.ac.ke</p>
+              <p className="text-foreground/80 mb-2">0709 742000</p>
+              <p className="text-foreground/80">Kirinyaga, Kenya</p>
             </div>
           </div>
           

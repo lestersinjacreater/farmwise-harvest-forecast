@@ -49,10 +49,24 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
   // Generate random tips based on prediction
   const tips = [
     "Consider using drought-resistant varieties if your area has unpredictable rainfall.",
-    "Proper spacing can increase your yield by allowing each plant adequate access to nutrients.",
-    "Regular monitoring for pests and diseases can help prevent significant crop losses.",
-    "Applying organic fertilizer can improve soil health and boost yields sustainably.",
-    "Implement crop rotation to prevent soil nutrient depletion and reduce pest buildup."
+  "Proper spacing can increase your yield by allowing each plant adequate access to nutrients.",
+  "Regular monitoring for pests and diseases can help prevent significant crop losses.",
+  "Applying organic fertilizer can improve soil health and boost yields sustainably.",
+  "Implement crop rotation to prevent soil nutrient depletion and reduce pest buildup.",
+  "Mulching can help retain soil moisture and regulate temperature, especially in dry regions.",
+  "Ensure proper irrigation techniques to provide consistent water supply without overwatering.",
+  "Test your soil regularly to determine nutrient levels and apply fertilizers accordingly.",
+  "Intercropping can improve soil fertility and reduce pest problems by enhancing biodiversity.",
+  "Harvest crops at the right time to maximize yield quality and market value.",
+  "Use natural predators like ladybugs and birds to control pests in an eco-friendly way.",
+  "Invest in post-harvest storage solutions to reduce losses and maintain crop quality.",
+  "Utilize weather forecasts to plan farming activities and reduce risks from extreme conditions.",
+  "Applying compost can enrich the soil with essential nutrients and improve its structure.",
+  "Select disease-resistant crop varieties to minimize losses and improve productivity.",
+  "Maintain farm records to track progress, identify patterns, and improve future planning.",
+  "Plant trees around your farm to act as windbreaks and reduce soil erosion.",
+  "Use smart farming apps or digital tools to get real-time insights and optimize farm management."
+  
   ];
 
   const randomTips = [...tips].sort(() => 0.5 - Math.random()).slice(0, 2);
