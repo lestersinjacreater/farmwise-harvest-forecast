@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +10,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [prediction, setPrediction] = useState<{ yield: number; unit: string } | null>(null);
   const [welcomeAnimation, setWelcomeAnimation] = useState(true);
+  const [seasonalAlert, setSeasonalAlert] = useState("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -23,6 +23,18 @@ const Dashboard = () => {
       setWelcomeAnimation(false);
     }, 1500);
   }, [isAuthenticated, navigate]);
+
+  // Set a random seasonal alert on page load
+  useEffect(() => {
+    const alerts = [
+      "The Kenya Meteorological Department predicts above-average rainfall in Eastern Kenya during the upcoming short rains. Plan your planting schedule accordingly.",
+      "Expect lower than usual temperatures and occasional frosts in the highlands. Protect tender crops with appropriate coverings.",
+      "A dry spell is forecasted for Central Kenya in the coming weeks. Consider scheduling irrigation and water conservation practices.",
+      "The forecast indicates a surge in wind speeds across coastal regions. Secure loose materials and consider windbreaks for vulnerable crops.",
+      "Unseasonal showers are predicted for Western Kenya. Monitor local weather updates closely and adjust your crop protection strategies."
+    ];
+    setSeasonalAlert(alerts[Math.floor(Math.random() * alerts.length)]);
+  }, []);
 
   const handlePrediction = (result: { yield: number; unit: string }) => {
     setPrediction(result);
@@ -120,7 +132,7 @@ const Dashboard = () => {
                 </div>
                 <div className="p-4">
                   <p className="text-foreground/80">
-                    The Kenya Meteorological Department predicts above-average rainfall in Eastern Kenya during the upcoming short rains. Plan your planting schedule accordingly.
+                    {seasonalAlert}
                   </p>
                 </div>
               </div>
