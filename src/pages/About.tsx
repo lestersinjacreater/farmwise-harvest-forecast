@@ -58,18 +58,7 @@ const About = () => {
             
             <div className="glass-panel rounded-xl p-8 animate-fade-in">
               <div className="prose prose-lg max-w-none text-foreground/90">
-                <p>
-                  In 2021, a team of agricultural experts, data scientists, and software engineers came together with a shared vision: to create a platform that would empower Kenyan farmers with data-driven insights tailored to their specific needs and growing conditions.
-                </p>
-                <p>
-                  We recognized that while Kenya has a rich agricultural heritage, many farmers lacked access to modern tools and technologies that could help them optimize their crop yields and adapt to changing climate conditions.
-                </p>
-                <p>
-                  After extensive research and collaboration with farming communities across Kenya, we developed FarmWise — a platform that combines traditional farming knowledge with advanced data analytics to provide accurate crop yield predictions and personalized recommendations.
-                </p>
-                <p>
-                  Today, FarmWise is helping thousands of Kenyan farmers make more informed decisions about their crops, leading to increased yields, reduced waste, and improved livelihoods.
-                </p>
+              <p> In 2024, a group of final-year students at Kirinyaga University embarked on a mission to fulfill their graduation requirements by developing a project that would have a real-world impact. They sought to create a solution that not only met academic standards but also addressed a pressing challenge in Kenya’s agricultural sector. </p> <p> Recognizing that many farmers struggle with unpredictable yields due to climate change and limited access to data-driven insights, the students set out to bridge this gap. Their project had to be innovative, practical, and capable of demonstrating the application of their years of study. </p> <p> After months of research, prototyping, and collaboration with local farming communities, they developed FarmWise—a platform that integrates modern data analytics with traditional agricultural practices. By providing predictive insights and tailored recommendations, the project showcased the students' technical skills and their commitment to solving real-world problems. </p> <p> Submitted as part of their final-year project, FarmWise not only fulfilled the academic requirements for graduation but also became a valuable tool for Kenyan farmers, helping them optimize their yields, minimize losses, and adapt to evolving farming challenges. </p>
               </div>
             </div>
           </div>
@@ -86,7 +75,7 @@ const About = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  name: 'LEONARD SINJA',
+                  name: 'LESTER SINJA',
                   registration: 'PA106/G/15053/21',
                   bio: 'Final year softaware enginnering student at kirinyaga university .',
                 },
@@ -170,7 +159,7 @@ const About = () => {
               </ul>
             </div>
             
-            <div>
+            {/* <div>
               <h4 className="font-semibold mb-4">Crops</h4>
               <ul className="space-y-2">
                 <li className="text-foreground/80">Maize</li>
@@ -179,13 +168,13 @@ const About = () => {
                 <li className="text-foreground/80">Potatoes</li>
                 <li className="text-foreground/80">Beans</li>
               </ul>
-            </div>
+            </div> */}
             
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
-              <p className="text-foreground/80 mb-2">contact@farmwise.co.ke</p>
-              <p className="text-foreground/80 mb-2">+254 123 456 789</p>
-              <p className="text-foreground/80">Nairobi, Kenya</p>
+              <p className="text-foreground/80 mb-2">info@kyu.ac.ke</p>
+              <p className="text-foreground/80 mb-2">0709 742000</p>
+              <p className="text-foreground/80"> Kirinyaga,Kenya</p>
             </div>
           </div>
           
