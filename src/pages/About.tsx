@@ -86,24 +86,29 @@ const About = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  name: 'John Kamau',
-                  role: 'Founder & CEO',
-                  bio: 'Agricultural economist with over 15 years of experience in Kenyan agriculture.'
+                  name: 'LEONARD SINJA',
+                  registration: 'PA106/G/15053/21',
+                  bio: 'Final year softaware enginnering student at kirinyaga university .',
                 },
                 {
-                  name: 'Amina Ochieng',
-                  role: 'Chief Agricultural Officer',
-                  bio: 'Expert in crop science with a focus on sustainable farming practices.'
+                  name: 'NAHASHON NJOROGE',
+                  role: 'PA106/G/14960/21',
+                  bio: 'Final year software engineering student at kirinyaga university .'
                 },
                 {
-                  name: 'Daniel Mwangi',
-                  role: 'Lead Data Scientist',
-                  bio: 'Specializes in predictive modeling for agricultural applications.'
+                  name: 'MASESE GWAKO MIKEALLAN',
+                  role: 'PA106/G/15084/21',
+                  bio: 'Final year software engineering student at kirinyaga university .'
                 },
                 {
-                  name: 'Grace Njeri',
-                  role: 'Community Outreach',
-                  bio: 'Works directly with farming communities to gather feedback and provide training.'
+                  name: 'CHARLES MUNGAI',
+                  role: 'PA106/G/14949/21',
+                  bio: 'Final year software engineering student at kirinyaga university .'
+                },
+                {
+                  name: 'MYAKOBI ANN NJOKI',
+                  role: 'PA106/G/14976/21',
+                  bio: 'Final year software engineering student at kirinyaga university .'
                 }
               ].map((member, index) => (
                 <div key={index} className="glass-panel rounded-xl p-6 text-center animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
