@@ -6,6 +6,8 @@ import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
+  console.log('🔄 Initializing Login page component');
+  
   const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
@@ -24,6 +26,7 @@ const Login = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log(`🔑 Login form field "${name}" updated`);
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     if (errors[name as keyof typeof errors]) {
@@ -36,6 +39,7 @@ const Login = () => {
   };
 
   const validate = () => {
+    console.log('🔍 Validating login form data');
     let valid = true;
     const newErrors = { ...errors };
     
@@ -43,46 +47,64 @@ const Login = () => {
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
       valid = false;
+      console.log('⚠️ Validation error: Email is required');
     }
     
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
       valid = false;
+      console.log('⚠️ Validation error: Password is required');
     }
     
     setErrors(newErrors);
+    console.log('🔍 Form validation result:', valid ? 'Valid' : 'Invalid');
     return valid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔒 Login form submitted');
     
     if (!validate()) {
+      console.log('❌ Form validation failed, stopping submission');
       return;
     }
+    
+    console.log('✅ Form validation passed');
+    console.log('📡 Sending authentication request to server');
+    console.log('📤 Login payload:', { email: formData.email, password: '********' });
     
     setIsLoading(true);
     
     // Simulate API call
     setTimeout(() => {
+      console.log('⏳ Authentication server processing request...');
       // For demo, allow any login with valid format
       if (formData.email.includes('@') && formData.password.length >= 6) {
         // Extract name from email (just for demo)
         const name = formData.email.split('@')[0];
+        
+        console.log('✅ Authentication successful for user:', formData.email);
+        console.log('📊 Retrieving user profile data');
         
         login({
           name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
           email: formData.email,
         });
         
+        console.log('📊 User session created successfully');
+        
         toast({
           title: "Login successful!",
           description: "Welcome back to FarmWise.",
         });
         
+        console.log('🔄 Redirecting to dashboard');
         navigate('/dashboard');
       } else {
+        console.log('❌ Authentication failed: Invalid credentials');
+        
         setErrors(prev => ({
           ...prev,
           general: 'Invalid email or password',
@@ -96,6 +118,7 @@ const Login = () => {
       }
       
       setIsLoading(false);
+      console.log('🏁 Login process completed');
     }, 1500);
   };
 

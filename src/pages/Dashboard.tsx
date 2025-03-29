@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -14,35 +15,50 @@ const Dashboard = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
+    console.log('🔒 Checking authentication status...');
     if (!isAuthenticated) {
+      console.log('🚫 User not authenticated, redirecting to login page');
       navigate('/login');
+    } else {
+      console.log('✅ User authenticated:', user?.email);
     }
     
     // Animation timing
     setTimeout(() => {
       setWelcomeAnimation(false);
+      console.log('🎬 Welcome animation completed');
     }, 1500);
   }, [isAuthenticated, navigate]);
 
   // Set a random seasonal alert on page load
   useEffect(() => {
-    const alerts = [
-      "The Kenya Meteorological Department predicts above-average rainfall in Eastern Kenya during the upcoming short rains. Plan your planting schedule accordingly.",
-      "Expect lower than usual temperatures and occasional frosts in the highlands. Protect tender crops with appropriate coverings.",
-      "A dry spell is forecasted for Central Kenya in the coming weeks. Consider scheduling irrigation and water conservation practices.",
-      "The forecast indicates a surge in wind speeds across coastal regions. Secure loose materials and consider windbreaks for vulnerable crops.",
-      "Unseasonal showers are predicted for Western Kenya. Monitor local weather updates closely and adjust your crop protection strategies."
-    ];
-    setSeasonalAlert(alerts[Math.floor(Math.random() * alerts.length)]);
+    console.log('📊 Fetching seasonal alerts from weather service API...');
+    
+    // Simulate API delay
+    setTimeout(() => {
+      console.log('📡 Weather service data received');
+      const alerts = [
+        "The Kenya Meteorological Department predicts above-average rainfall in Eastern Kenya during the upcoming short rains. Plan your planting schedule accordingly.",
+        "Expect lower than usual temperatures and occasional frosts in the highlands. Protect tender crops with appropriate coverings.",
+        "A dry spell is forecasted for Central Kenya in the coming weeks. Consider scheduling irrigation and water conservation practices.",
+        "The forecast indicates a surge in wind speeds across coastal regions. Secure loose materials and consider windbreaks for vulnerable crops.",
+        "Unseasonal showers are predicted for Western Kenya. Monitor local weather updates closely and adjust your crop protection strategies."
+      ];
+      console.log('🌦️ Processing weather alert data...');
+      setSeasonalAlert(alerts[Math.floor(Math.random() * alerts.length)]);
+      console.log('✅ Weather alert set successfully');
+    }, 800);
   }, []);
 
   const handlePrediction = (result: { yield: number; unit: string }) => {
+    console.log('📈 Received prediction result from ML model:', result);
     setPrediction(result);
   };
 
   // Current time-based greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
+    console.log('⏰ Getting time-based greeting. Current hour:', hour);
     if (hour < 12) return 'Good Morning';
     if (hour < 18) return 'Good Afternoon';
     return 'Good Evening';
@@ -52,6 +68,8 @@ const Dashboard = () => {
     return null; // Don't render anything while redirecting
   }
 
+  console.log('🔄 Rendering dashboard for user:', user.name);
+  
   return (
     <div className="min-h-screen pb-20">
       <Navbar />

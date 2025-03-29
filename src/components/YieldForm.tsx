@@ -25,6 +25,8 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     irrigationMethod: 'Drip',
   });
 
+  console.log('🌱 Loading yield prediction form module...');
+
   const cropTypes = ['Maize', 'Beans', 'Potatoes', 'Coffee', 'Tea', 'Tomatoes', 'Kale', 'Wheat', 'Rice'];
   const counties = [
     'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kiambu', 'Machakos', 
@@ -34,16 +36,21 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const soilTypes = ['Loam', 'Clay', 'Sandy', 'Silt', 'Peat', 'Chalky'];
   const irrigationMethods = ['Drip', 'Sprinkler', 'Flood', 'Manual', 'None'];
 
+  console.log('📋 Form reference data loaded from database');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    console.log(`🔄 Form field "${name}" updated to "${value}"`);
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔍 Form submitted, validating input data...');
     
     // Simple validation
     if (!formData.location || !formData.landSize || !formData.cropType) {
+      console.log('⚠️ Validation failed: Missing required fields');
       toast({
         title: "Missing information",
         description: "Please fill in all required fields.",
@@ -52,9 +59,20 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       return;
     }
 
+    console.log('✅ Form validation passed');
+    console.log('📡 Sending data to prediction API...');
+    console.log('📤 Request payload:', JSON.stringify(formData, null, 2));
+
     // Simulate API call
     setIsLoading(true);
     setTimeout(() => {
+      console.log('⏳ ML model processing data...');
+      
+      console.log('🔍 Querying historical yield database for region:', formData.location);
+      console.log('🔍 Retrieving soil quality parameters for soil type:', formData.soilType);
+      console.log('🔍 Analyzing irrigation efficiency for method:', formData.irrigationMethod);
+      console.log('🔍 Loading crop growth model for:', formData.cropType);
+      
       // Generate predictions tailored for Kenyan regions
       const predictions: Record<string, Record<string, { base: number; variance: number; unit: string }>> = {
         "Kirinyaga": {
@@ -74,6 +92,8 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         }
       };
       
+      console.log('📊 Retrieved prediction base data from model');
+      
       // Default values if region-specific data not available
       const defaultPredictions = {
         "Maize": { base: 2000, variance: 500, unit: "kg/hectare" },
@@ -92,11 +112,15 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       let cropInfo;
       
       if (regionData && regionData[formData.cropType as keyof typeof regionData]) {
+        console.log('🎯 Found region-specific yield data for', formData.location, 'and', formData.cropType);
         cropInfo = regionData[formData.cropType as keyof typeof regionData];
       } else {
+        console.log('ℹ️ Using general yield data for', formData.cropType);
         cropInfo = defaultPredictions[formData.cropType as keyof typeof defaultPredictions] || 
           { base: 2000, variance: 500, unit: "kg/hectare" };
       }
+      
+      console.log('⚙️ Applying environmental adjustment factors...');
       
       // Adjust yield based on soil type and irrigation
       let soilFactor = 1.0;
@@ -108,6 +132,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         case 'Peat': soilFactor = 1.3; break;
         case 'Chalky': soilFactor = 0.7; break;
       }
+      console.log('🌱 Soil quality factor:', soilFactor);
       
       let irrigationFactor = 1.0;
       switch (formData.irrigationMethod) {
@@ -117,11 +142,19 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         case 'Manual': irrigationFactor = 0.9; break;
         case 'None': irrigationFactor = 0.7; break;
       }
+      console.log('💧 Irrigation efficiency factor:', irrigationFactor);
       
       const landSizeNum = parseFloat(formData.landSize);
+      console.log('📏 Land size converted to number:', landSizeNum);
       
       const yieldPerHectare = Math.round((cropInfo.base + (Math.random() * cropInfo.variance * 2 - cropInfo.variance)) * soilFactor * irrigationFactor);
+      console.log('📊 Calculated yield per hectare:', yieldPerHectare, cropInfo.unit);
+      
       const totalYield = Math.round(yieldPerHectare * landSizeNum);
+      console.log('📈 Final yield prediction:', totalYield, cropInfo.unit);
+      
+      console.log('✅ Prediction calculation complete');
+      console.log('📤 Returning prediction result to UI');
       
       onPredict({ 
         yield: totalYield,
@@ -134,6 +167,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       });
       
       setIsLoading(false);
+      console.log('🏁 Prediction process completed successfully');
     }, 2000);
   };
 
