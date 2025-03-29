@@ -52,7 +52,7 @@ const About = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Our Story</h2>
               <p className="text-foreground/80 max-w-3xl mx-auto">
-                FarmWise was born from the desire to bridge the gap between traditional farming wisdom and modern agricultural technology.
+              FarmWise was developed as a final-year project at Kirinyaga University, driven by the need to merge traditional farming knowledge with modern agricultural technology to meet academic requirements while solving real-world challenges.
               </p>
             </div>
             
