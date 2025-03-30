@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,6 +40,12 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     console.log(`🔄 Form field "${name}" updated to "${value}"`);
+    
+    // Store the cropType in localStorage when it changes
+    if (name === 'cropType') {
+      localStorage.setItem('lastCropType', value);
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -62,6 +67,9 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     console.log('✅ Form validation passed');
     console.log('📡 Sending data to prediction API...');
     console.log('📤 Request payload:', JSON.stringify(formData, null, 2));
+
+    // Store form data in localStorage for the prediction result component
+    localStorage.setItem('lastCropType', formData.cropType);
 
     // Simulate API call
     setIsLoading(true);

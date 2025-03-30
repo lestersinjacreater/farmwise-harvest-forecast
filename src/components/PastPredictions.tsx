@@ -22,12 +22,19 @@ const PastPredictions = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('🔄 Fetching past prediction data from API...');
+    console.log('🔄 Fetching past prediction data from localStorage...');
     
-    // Simulate API fetch delay
-    setTimeout(() => {
-      console.log('📡 Received past predictions from server');
-      // Mock data for past predictions - updated with 2025 dates
+    // Get predictions from localStorage
+    const storedPredictions = localStorage.getItem('predictions');
+    
+    if (storedPredictions) {
+      console.log('📡 Found predictions in localStorage');
+      const parsedPredictions = JSON.parse(storedPredictions);
+      console.log('✅ Processed prediction data:', parsedPredictions);
+      setPredictions(parsedPredictions);
+    } else {
+      console.log('ℹ️ No stored predictions found, using default sample data');
+      // If no data in localStorage, use sample data with 2025 dates
       const mockPredictions: Prediction[] = [
         { 
           id: 'pred-001', 
@@ -71,37 +78,41 @@ const PastPredictions = () => {
         }
       ];
       
-      console.log('✅ Processed prediction data:', mockPredictions);
+      // Save sample data to localStorage for future use
+      localStorage.setItem('predictions', JSON.stringify(mockPredictions));
       setPredictions(mockPredictions);
-    }, 800);
+    }
   }, []);
 
   const handleRating = (id: string, rating: number) => {
     console.log(`⭐ User rated prediction ${id} with ${rating} stars`);
-    console.log('📤 Sending rating to backend API...');
+    console.log('📤 Updating rating in localStorage...');
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log('✅ Rating saved successfully on server');
-      setPredictions(prevPredictions => 
-        prevPredictions.map(pred => 
-          pred.id === id ? { ...pred, rating } : pred
-        )
-      );
-    }, 300);
+    const updatedPredictions = predictions.map(pred => 
+      pred.id === id ? { ...pred, rating } : pred
+    );
+    
+    // Save updated predictions back to localStorage
+    localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+    console.log('✅ Rating saved successfully to localStorage');
+    
+    setPredictions(updatedPredictions);
   };
 
   const handleDelete = (id: string) => {
     console.log(`🗑️ User is attempting to delete prediction ${id}`);
     setDeleting(id);
-    console.log('📤 Sending delete request to backend API...');
+    console.log('📤 Removing from localStorage...');
     
-    // Simulate API call with delay
     setTimeout(() => {
-      console.log(`✅ Prediction ${id} deleted successfully from database`);
-      setPredictions(prevPredictions => 
-        prevPredictions.filter(pred => pred.id !== id)
-      );
+      // Filter out the deleted prediction
+      const filteredPredictions = predictions.filter(pred => pred.id !== id);
+      
+      // Update localStorage
+      localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
+      console.log(`✅ Prediction ${id} deleted successfully from localStorage`);
+      
+      setPredictions(filteredPredictions);
       setDeleting(null);
       
       toast({
@@ -125,7 +136,7 @@ const PastPredictions = () => {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
-            Loading your past predictions...
+            You don't have any saved predictions yet. Make a prediction and save it to see it here.
           </p>
         </CardContent>
       </Card>

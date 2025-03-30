@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface PredictionResultProps {
   prediction: {
@@ -91,12 +92,34 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
   console.log('✅ Selected tips:', randomTips);
   
   const handleSave = () => {
-    console.log('💾 Saving prediction to user history...');
-    // Simulate API call to save prediction
-    setTimeout(() => {
-      console.log('✅ Prediction saved successfully to user history');
-      setSaved(true);
-    }, 500);
+    console.log('💾 Saving prediction to local storage...');
+    
+    // Create a new prediction object with unique ID and current date
+    const newPrediction = {
+      id: uuidv4(),
+      date: new Date().toISOString().split('T')[0],
+      crop: localStorage.getItem('lastCropType') || 'Maize', // Get from form data if available
+      yield: prediction.yield,
+      unit: prediction.unit,
+      rating: null
+    };
+    
+    console.log('📦 New prediction object:', newPrediction);
+    
+    // Get existing predictions from localStorage
+    const existingPredictionsJSON = localStorage.getItem('predictions');
+    const existingPredictions = existingPredictionsJSON ? JSON.parse(existingPredictionsJSON) : [];
+    
+    console.log('📂 Existing predictions in storage:', existingPredictions.length);
+    
+    // Add new prediction to the array
+    const updatedPredictions = [newPrediction, ...existingPredictions];
+    
+    // Save back to localStorage
+    localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+    console.log('✅ Prediction saved successfully to local storage');
+    
+    setSaved(true);
   };
 
   return (

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import YieldForm from '@/components/YieldForm';
@@ -162,7 +162,7 @@ const Dashboard = () => {
                   This application is a final year software engineering project from Kirinyaga University, demonstrating 
                   how technology can be applied to Kenyan agriculture.
                 </p>
-                <a href="/About" className="text-farm-leaf hover:underline">View project details →</a>
+                <Link to="/about" className="text-farm-leaf hover:underline">View project details →</Link>
               </div>
             </div>
             
