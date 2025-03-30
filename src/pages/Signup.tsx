@@ -232,7 +232,7 @@ const Signup = () => {
           <div className="mt-8 px-4 py-3 bg-muted/50 rounded-md text-center">
             <p className="text-sm text-foreground/70">
               This is a final year project demonstration for Kirinyaga University.
-              <br />No actual account is created.
+              <br />thanks for creating an account.
             </p>
           </div>
         </div>
