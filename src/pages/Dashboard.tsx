@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import YieldForm from '@/components/YieldForm';
 import PredictionResult from '@/components/PredictionResult';
+import PastPredictions from '@/components/PastPredictions';
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -173,6 +174,11 @@ const Dashboard = () => {
               </div>
               
               {prediction && <PredictionResult prediction={prediction} />}
+              
+              {/* Past Predictions Section */}
+              <div className="mt-8">
+                <PastPredictions />
+              </div>
             </div>
           </div>
         </div>

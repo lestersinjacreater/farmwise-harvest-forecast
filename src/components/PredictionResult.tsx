@@ -11,6 +11,7 @@ interface PredictionResultProps {
 const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [count, setCount] = useState(0);
+  const [saved, setSaved] = useState(false);
 
   console.log('🔢 Initializing prediction result component');
 
@@ -19,6 +20,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
       console.log('📊 New prediction received:', prediction);
       setIsVisible(true);
       setCount(0);
+      setSaved(false);
       
       console.log('🎬 Starting result animation sequence');
       // Animate counting up to the yield value
@@ -87,6 +89,15 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
   console.log('🎲 Selecting random tips for this prediction');
   const randomTips = [...tips].sort(() => 0.5 - Math.random()).slice(0, 2);
   console.log('✅ Selected tips:', randomTips);
+  
+  const handleSave = () => {
+    console.log('💾 Saving prediction to user history...');
+    // Simulate API call to save prediction
+    setTimeout(() => {
+      console.log('✅ Prediction saved successfully to user history');
+      setSaved(true);
+    }, 500);
+  };
 
   return (
     <div className="mt-8 animate-scale-in">
@@ -123,10 +134,24 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
             </ul>
           </div>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             Note: This prediction is based on historical data and current input parameters. 
             Actual yields may vary due to weather conditions, farming practices, and other factors.
           </p>
+          
+          <div className="flex justify-end">
+            <button 
+              onClick={handleSave}
+              disabled={saved}
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                saved 
+                  ? 'bg-green-100 text-green-700 cursor-not-allowed' 
+                  : 'bg-farm-leaf text-white hover:bg-farm-leaf-light'
+              }`}
+            >
+              {saved ? '✓ Saved to History' : 'Save Prediction'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
