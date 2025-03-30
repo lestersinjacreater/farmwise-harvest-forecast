@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -8,6 +9,8 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Add historyApiFallback to handle client-side routing on refresh
+    historyApiFallback: true,
   },
   plugins: [
     react(),
@@ -19,4 +22,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Add base configuration to ensure assets are loaded correctly
+  base: "/",
 }));
