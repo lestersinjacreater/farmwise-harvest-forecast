@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [prediction, setPrediction] = useState<{ yield: number; unit: string } | null>(null);
   const [welcomeAnimation, setWelcomeAnimation] = useState(true);
   const [seasonalAlert, setSeasonalAlert] = useState("");
+  const [hasPredictions, setHasPredictions] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -29,6 +30,16 @@ const Dashboard = () => {
       setWelcomeAnimation(false);
       console.log('🎬 Welcome animation completed');
     }, 1500);
+
+    // Check if predictions exist in localStorage
+    const storedPredictions = localStorage.getItem('predictions');
+    if (storedPredictions) {
+      const parsedPredictions = JSON.parse(storedPredictions);
+      if (parsedPredictions.length > 0) {
+        setHasPredictions(true);
+        console.log('📋 Found existing predictions in storage');
+      }
+    }
   }, [isAuthenticated, navigate]);
 
   // Set a random seasonal alert on page load
@@ -54,6 +65,7 @@ const Dashboard = () => {
   const handlePrediction = (result: { yield: number; unit: string }) => {
     console.log('📈 Received prediction result from ML model:', result);
     setPrediction(result);
+    setHasPredictions(true); // Set to true when a prediction is made
   };
 
   // Current time-based greeting
@@ -175,10 +187,12 @@ const Dashboard = () => {
               
               {prediction && <PredictionResult prediction={prediction} />}
               
-              {/* Past Predictions Section */}
-              <div className="mt-8">
-                <PastPredictions />
-              </div>
+              {/* Past Predictions Section - only show if predictions exist */}
+              {hasPredictions && (
+                <div className="mt-8">
+                  <PastPredictions />
+                </div>
+              )}
             </div>
           </div>
         </div>

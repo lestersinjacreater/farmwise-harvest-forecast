@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 
 interface Prediction {
@@ -33,55 +32,27 @@ const PastPredictions = () => {
       console.log('✅ Processed prediction data:', parsedPredictions);
       setPredictions(parsedPredictions);
     } else {
-      console.log('ℹ️ No stored predictions found, using default sample data');
-      // If no data in localStorage, use sample data with 2025 dates
-      const mockPredictions: Prediction[] = [
-        { 
-          id: 'pred-001', 
-          date: '2025-01-15', 
-          crop: 'Maize', 
-          yield: 3500, 
-          unit: 'kg/hectare', 
-          rating: 4 
-        },
-        { 
-          id: 'pred-002', 
-          date: '2025-02-22', 
-          crop: 'Beans', 
-          yield: 1200, 
-          unit: 'kg/hectare', 
-          rating: 3 
-        },
-        { 
-          id: 'pred-003', 
-          date: '2025-03-05', 
-          crop: 'Sweet Potatoes', 
-          yield: 8000, 
-          unit: 'kg/hectare', 
-          rating: null 
-        },
-        { 
-          id: 'pred-004', 
-          date: '2025-04-18', 
-          crop: 'Cassava', 
-          yield: 12000, 
-          unit: 'kg/hectare', 
-          rating: 5 
-        },
-        { 
-          id: 'pred-005', 
-          date: '2025-05-27', 
-          crop: 'Tomatoes', 
-          yield: 4500, 
-          unit: 'kg/hectare', 
-          rating: null 
-        }
-      ];
-      
-      // Save sample data to localStorage for future use
-      localStorage.setItem('predictions', JSON.stringify(mockPredictions));
-      setPredictions(mockPredictions);
+      console.log('ℹ️ No stored predictions found');
+      setPredictions([]);
     }
+  }, []);
+
+  // Handle prediction added event from localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('🔄 Local storage changed, updating predictions list');
+      const storedPredictions = localStorage.getItem('predictions');
+      if (storedPredictions) {
+        const parsedPredictions = JSON.parse(storedPredictions);
+        setPredictions(parsedPredictions);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleRating = (id: string, rating: number) => {

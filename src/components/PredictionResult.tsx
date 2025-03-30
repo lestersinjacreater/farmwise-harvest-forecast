@@ -119,6 +119,9 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
     localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
     console.log('✅ Prediction saved successfully to local storage');
     
+    // Dispatch a storage event to notify other components
+    window.dispatchEvent(new Event('storage'));
+    
     setSaved(true);
   };
 
