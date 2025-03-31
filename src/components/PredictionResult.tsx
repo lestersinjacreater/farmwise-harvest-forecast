@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Link } from 'react-router-dom';
+import { FileBarChart } from 'lucide-react';
 
 interface PredictionResultProps {
   prediction: {
@@ -165,7 +167,15 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
             Actual yields may vary due to weather conditions, farming practices, and other factors.
           </p>
           
-          <div className="flex justify-end">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <Link 
+              to="/reports" 
+              className="px-4 py-2 rounded-md flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
+            >
+              <FileBarChart size={18} />
+              View Detailed Reports
+            </Link>
+            
             <button 
               onClick={handleSave}
               disabled={saved}
