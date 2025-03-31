@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -16,20 +15,19 @@ const Reports = () => {
   const [ratings, setRatings] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("yield");
 
-  // Redirect if not authenticated
+  const currentYear = new Date().getFullYear();
+  
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
-    // Load predictions from localStorage
     const storedPredictions = localStorage.getItem('predictions');
     if (storedPredictions) {
       const parsedPredictions = JSON.parse(storedPredictions);
       setPredictions(parsedPredictions);
 
-      // Extract ratings for feedback report
       const ratingData = parsedPredictions
         .filter((pred: any) => pred.rating !== null)
         .map((pred: any) => ({
@@ -39,7 +37,6 @@ const Reports = () => {
       setRatings(ratingData);
     }
 
-    // Listen for storage events (when new predictions are saved)
     const handleStorageChange = () => {
       const updatedPredictions = localStorage.getItem('predictions');
       if (updatedPredictions) {
@@ -53,7 +50,6 @@ const Reports = () => {
     };
   }, [isAuthenticated, navigate]);
 
-  // Generate sample weather data for demonstration
   const weatherData = [
     { month: 'Jan', rainfall: 120, temperature: 23 },
     { month: 'Feb', rainfall: 100, temperature: 24 },
@@ -69,7 +65,6 @@ const Reports = () => {
     { month: 'Dec', rainfall: 130, temperature: 24 },
   ];
 
-  // Sample soil data for visualization
   const soilData = [
     { name: 'Nitrogen', value: 45 },
     { name: 'Phosphorus', value: 30 },
@@ -78,17 +73,24 @@ const Reports = () => {
     { name: 'pH', value: 6.5 },
   ];
 
-  // Sample model accuracy data
-  const modelAccuracyData = [
-    { month: 'Jan', accuracy: 82 },
-    { month: 'Feb', accuracy: 83 },
-    { month: 'Mar', accuracy: 86 },
-    { month: 'Apr', accuracy: 87 },
-    { month: 'May', accuracy: 88 },
-    { month: 'Jun', accuracy: 90 },
-  ];
+  const generateAccuracyData = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const months = [];
+    
+    for (let month = 1; month <= currentMonth; month++) {
+      const date = new Date(currentYear, month, 1);
+      months.push({
+        month: date.toLocaleString('default', { month: 'short' }),
+        accuracy: 80 + Math.round(Math.random() * 5) + (month - 1) * 2
+      });
+    }
+    
+    return months;
+  };
 
-  // Feedback rating distribution
+  const modelAccuracyData = generateAccuracyData();
+
   const ratingDistribution = [
     { name: '5 Stars', value: ratings.filter(r => r.rating === 5).length || 2 },
     { name: '4 Stars', value: ratings.filter(r => r.rating === 4).length || 5 },
@@ -97,10 +99,8 @@ const Reports = () => {
     { name: '1 Star', value: ratings.filter(r => r.rating === 1).length || 0 },
   ];
 
-  // Colors for pie chart
   const COLORS = ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444'];
 
-  // Sample crop yield data based on real predictions or demo data
   const yieldData = predictions.length > 0 
     ? predictions.map(pred => ({
         name: pred.crop,
@@ -114,7 +114,6 @@ const Reports = () => {
         { name: 'Potatoes', yield: 18000, date: '2023-09-05' },
       ];
 
-  // Factor influence data (sample)
   const factorInfluenceData = [
     { factor: 'Rainfall', influence: 35 },
     { factor: 'Soil Type', influence: 25 },
@@ -122,6 +121,49 @@ const Reports = () => {
     { factor: 'Temperature', influence: 15 },
     { factor: 'Other', influence: 5 },
   ];
+
+  const generateModelUpdates = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const updates = [];
+    
+    for (let month = 1; month <= currentMonth; month++) {
+      const date = new Date(currentYear, month, 15);
+      
+      let title, description;
+      
+      if (month === 1) {
+        title = "February 2023 Update";
+        description = "Initial machine learning model integration with historical yield data from Kenya Agricultural Research Institute.";
+      } else if (month === 2) {
+        title = "March 2023 Update";
+        description = "Added support for coffee and tea yield predictions. Implemented region-specific climate adjustment factors.";
+      } else if (month === 3) {
+        title = "April 2023 Update";
+        description = "Enhanced prediction accuracy for maize and beans by 8%. Integrated seasonal rainfall pattern analysis.";
+      } else if (month === 4) {
+        title = "May 2023 Update";
+        description = "Improved soil composition influence factors based on national soil survey data. Added pest prevalence prediction.";
+      } else if (month === 5) {
+        title = "June 2023 Update";
+        description = "Improved rainfall distribution modeling for Eastern Kenya regions. Added AI-powered recommendation engine.";
+      } else {
+        title = `${date.toLocaleString('default', { month: 'long' })} ${currentYear} Update`;
+        description = "Continuous model refinement based on user feedback and seasonal crop yield data.";
+      }
+      
+      updates.push({
+        version: `v${month + 1}.${Math.floor(Math.random() * 9) + 1}`,
+        date: date,
+        title: title,
+        description: description
+      });
+    }
+    
+    return updates.sort((a, b) => b.date.getTime() - a.date.getTime());
+  };
+  
+  const modelUpdates = generateModelUpdates();
 
   return (
     <div className="min-h-screen pb-20">
@@ -150,7 +192,6 @@ const Reports = () => {
               </TabsTrigger>
             </TabsList>
             
-            {/* Crop Yield Prediction Report */}
             <TabsContent value="yield" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -227,7 +268,6 @@ const Reports = () => {
               </Card>
             </TabsContent>
             
-            {/* Weather and Soil Condition Report */}
             <TabsContent value="weather" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -346,7 +386,6 @@ const Reports = () => {
               </Card>
             </TabsContent>
             
-            {/* User Feedback and Model Improvement Report */}
             <TabsContent value="feedback" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -355,7 +394,7 @@ const Reports = () => {
                     User Feedback & Model Improvement Report
                   </CardTitle>
                   <CardDescription>
-                    Analysis of user feedback and model performance tracking
+                    Analysis of user feedback and model performance from February {currentYear} to {new Date().toLocaleString('default', { month: 'long' })} {currentYear}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -386,7 +425,7 @@ const Reports = () => {
                     </div>
                     
                     <div>
-                      <h3 className="text-lg font-medium mb-4">Model Accuracy Improvement</h3>
+                      <h3 className="text-lg font-medium mb-4">Model Accuracy Improvement ({currentYear})</h3>
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
@@ -397,7 +436,7 @@ const Reports = () => {
                             <XAxis dataKey="month" />
                             <YAxis domain={[75, 100]} label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft' }} />
                             <Tooltip />
-                            <Line type="monotone" dataKey="accuracy" stroke="#d946ef" strokeWidth={2} />
+                            <Line type="monotone" dataKey="accuracy" stroke="#d946ef" strokeWidth={2} name="Prediction Accuracy" />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
@@ -413,6 +452,7 @@ const Reports = () => {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Issue Identified</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Affected Crops</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Model Adjustment</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Implementation Date</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                           </tr>
                         </thead>
@@ -421,6 +461,7 @@ const Reports = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Overestimation during drought periods</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Maize, Beans</td>
                             <td className="px-6 py-4 text-sm">Added drought sensitivity factor</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">Feb {currentYear}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Implemented
@@ -431,6 +472,7 @@ const Reports = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Underestimation for irrigated farms</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Rice, Tomatoes</td>
                             <td className="px-6 py-4 text-sm">Improved irrigation efficiency calculation</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">Mar {currentYear}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Implemented
@@ -441,6 +483,7 @@ const Reports = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Regional yield variations not captured</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Coffee, Tea</td>
                             <td className="px-6 py-4 text-sm">Added microclimate factors for highland areas</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">Apr {currentYear}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                 In Progress
@@ -451,6 +494,7 @@ const Reports = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">Pest impact not adequately factored</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">All Crops</td>
                             <td className="px-6 py-4 text-sm">Developing pest prevalence prediction module</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">May {currentYear}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                 Planned
@@ -463,46 +507,21 @@ const Reports = () => {
                   </div>
                   
                   <div className="glass-panel rounded-lg p-4">
-                    <h3 className="text-lg font-medium mb-4">Recent Model Updates</h3>
+                    <h3 className="text-lg font-medium mb-4">Recent Model Updates ({currentYear})</h3>
                     <div className="space-y-4">
-                      <div className="flex gap-3">
-                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-purple-600 text-sm font-medium">v2.3</span>
+                      {modelUpdates.map((update, index) => (
+                        <div key={index} className="flex gap-3">
+                          <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-purple-600 text-sm font-medium">{update.version}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{update.title}</h4>
+                            <p className="text-sm text-foreground/80">
+                              {update.description}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium">June 2023 Update</h4>
-                          <p className="text-sm text-foreground/80">
-                            Improved rainfall distribution modeling for Eastern Kenya regions.
-                            Added soil composition influence factors based on national soil survey data.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-blue-600 text-sm font-medium">v2.2</span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium">May 2023 Update</h4>
-                          <p className="text-sm text-foreground/80">
-                            Integrated historical yield data from Kenya Agricultural Research Institute.
-                            Enhanced prediction accuracy for maize and beans by 8%.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-3">
-                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-green-600 text-sm font-medium">v2.1</span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium">April 2023 Update</h4>
-                          <p className="text-sm text-foreground/80">
-                            Added support for coffee and tea yield predictions.
-                            Implemented region-specific climate adjustment factors.
-                          </p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
