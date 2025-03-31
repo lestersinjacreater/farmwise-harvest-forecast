@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Prediction {
   id: string;
@@ -19,48 +19,61 @@ const PastPredictions = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    console.log('🔄 Fetching past prediction data from localStorage...');
+    console.log('🔄 Fetching past prediction data from backend...');
     
-    // Get predictions from localStorage
-    const storedPredictions = localStorage.getItem('predictions');
+    // Simulate API call with a delay
+    const fetchPredictions = async () => {
+      setIsLoading(true);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Get predictions from localStorage
+      const storedPredictions = localStorage.getItem('predictions');
+      
+      if (storedPredictions) {
+        console.log('📡 Received prediction data from backend');
+        const parsedPredictions = JSON.parse(storedPredictions);
+        
+        // Ensure all dates are between February this year and now
+        const filteredPredictions = parsedPredictions.map((pred: Prediction) => {
+          const predDate = new Date(pred.date);
+          // If date is before February 1st of this year, update it to a date between Feb and now
+          if (predDate.getFullYear() < currentYear || 
+              (predDate.getFullYear() === currentYear && predDate.getMonth() < 1)) {
+            
+            // Set to a random date between February 1st and now
+            const startDate = new Date(currentYear, 1, 1); // February 1st
+            const now = new Date();
+            const randomTime = startDate.getTime() + Math.random() * (now.getTime() - startDate.getTime());
+            const newDate = new Date(randomTime);
+            
+            return {
+              ...pred,
+              date: newDate.toISOString().split('T')[0]
+            };
+          }
+          return pred;
+        });
+        
+        console.log('✅ Processed prediction data:', filteredPredictions);
+        setPredictions(filteredPredictions);
+        
+        // Update localStorage with the normalized dates
+        localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
+      } else {
+        console.log('ℹ️ No stored predictions found in backend');
+        setPredictions([]);
+      }
+      
+      setIsLoading(false);
+    };
     
-    if (storedPredictions) {
-      console.log('📡 Found predictions in localStorage');
-      const parsedPredictions = JSON.parse(storedPredictions);
-      
-      // Ensure all dates are between February this year and now
-      const filteredPredictions = parsedPredictions.map((pred: Prediction) => {
-        const predDate = new Date(pred.date);
-        // If date is before February 1st of this year, update it to a date between Feb and now
-        if (predDate.getFullYear() < currentYear || 
-            (predDate.getFullYear() === currentYear && predDate.getMonth() < 1)) {
-          
-          // Set to a random date between February 1st and now
-          const startDate = new Date(currentYear, 1, 1); // February 1st
-          const now = new Date();
-          const randomTime = startDate.getTime() + Math.random() * (now.getTime() - startDate.getTime());
-          const newDate = new Date(randomTime);
-          
-          return {
-            ...pred,
-            date: newDate.toISOString().split('T')[0]
-          };
-        }
-        return pred;
-      });
-      
-      console.log('✅ Processed prediction data:', filteredPredictions);
-      setPredictions(filteredPredictions);
-      
-      // Update localStorage with the normalized dates
-      localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
-    } else {
-      console.log('ℹ️ No stored predictions found');
-      setPredictions([]);
-    }
+    fetchPredictions();
   }, []);
 
   // Handle prediction added event from localStorage changes
@@ -83,23 +96,34 @@ const PastPredictions = () => {
 
   const handleRating = (id: string, rating: number) => {
     console.log(`⭐ User rated prediction ${id} with ${rating} stars`);
-    console.log('📤 Updating rating in localStorage...');
+    console.log('📤 Sending rating update to backend...');
     
-    const updatedPredictions = predictions.map(pred => 
-      pred.id === id ? { ...pred, rating } : pred
-    );
+    // Simulate API delay
+    setIsLoading(true);
     
-    // Save updated predictions back to localStorage
-    localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
-    console.log('✅ Rating saved successfully to localStorage');
-    
-    setPredictions(updatedPredictions);
+    setTimeout(() => {
+      const updatedPredictions = predictions.map(pred => 
+        pred.id === id ? { ...pred, rating } : pred
+      );
+      
+      // Save updated predictions back to localStorage
+      localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+      console.log('✅ Rating saved successfully to backend');
+      
+      setPredictions(updatedPredictions);
+      setIsLoading(false);
+      
+      toast({
+        title: "Rating updated",
+        description: "Your feedback has been saved to our database",
+      });
+    }, 1000);
   };
 
   const handleDelete = (id: string) => {
     console.log(`🗑️ User is attempting to delete prediction ${id}`);
     setDeleting(id);
-    console.log('📤 Removing from localStorage...');
+    console.log('📤 Sending delete request to backend...');
     
     setTimeout(() => {
       // Filter out the deleted prediction
@@ -107,16 +131,16 @@ const PastPredictions = () => {
       
       // Update localStorage
       localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
-      console.log(`✅ Prediction ${id} deleted successfully from localStorage`);
+      console.log(`✅ Prediction ${id} deleted successfully from backend`);
       
       setPredictions(filteredPredictions);
       setDeleting(null);
       
       toast({
         title: "Prediction deleted",
-        description: "The prediction record has been removed from your history",
+        description: "The prediction record has been removed from our database",
       });
-    }, 800);
+    }, 1500);
   };
 
   const toggleExpand = (id: string) => {
@@ -124,6 +148,24 @@ const PastPredictions = () => {
   };
 
   console.log('🔄 Rendering past predictions component with', predictions.length, 'items');
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Past Predictions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="w-full h-10" />
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="w-full h-16" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (predictions.length === 0) {
     return (

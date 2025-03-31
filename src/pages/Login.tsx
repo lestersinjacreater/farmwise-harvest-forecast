@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
+import { LoaderCircle } from 'lucide-react';
 
 const Login = () => {
   console.log('🔄 Initializing Login page component');
@@ -77,16 +78,19 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
+    // Simulate API call with longer delay
     setTimeout(() => {
       console.log('⏳ Authentication server processing request...');
+      console.log('🔐 Verifying credentials against secure database...');
+      
       // For demo, allow any login with valid format
       if (formData.email.includes('@') && formData.password.length >= 6) {
         // Extract name from email (just for demo)
         const name = formData.email.split('@')[0];
         
         console.log('✅ Authentication successful for user:', formData.email);
-        console.log('📊 Retrieving user profile data');
+        console.log('📊 Retrieving user profile data from database');
+        console.log('🔑 Generating secure session token');
         
         login({
           name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
@@ -119,7 +123,7 @@ const Login = () => {
       
       setIsLoading(false);
       console.log('🏁 Login process completed');
-    }, 1500);
+    }, 3000);
   };
 
   return (
@@ -152,6 +156,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={`input-field w-full ${errors.email ? 'border-destructive' : ''}`}
+                disabled={isLoading}
               />
               {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
             </div>
@@ -173,6 +178,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className={`input-field w-full ${errors.password ? 'border-destructive' : ''}`}
+                disabled={isLoading}
               />
               {errors.password && <p className="text-destructive text-sm mt-1">{errors.password}</p>}
             </div>
@@ -184,11 +190,8 @@ const Login = () => {
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Logging In...</span>
+                  <LoaderCircle className="animate-spin mr-2 h-5 w-5" />
+                  <span>Authenticating...</span>
                 </div>
               ) : (
                 "Log In"

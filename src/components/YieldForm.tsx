@@ -1,5 +1,7 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { LoaderCircle } from 'lucide-react';
 
 type FormData = {
   location: string;
@@ -16,6 +18,7 @@ interface YieldFormProps {
 const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [processingStage, setProcessingStage] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     location: '',
     landSize: '',
@@ -71,9 +74,34 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     // Store form data in localStorage for the prediction result component
     localStorage.setItem('lastCropType', formData.cropType);
 
-    // Simulate API call
+    // Simulate API call with multiple processing stages
     setIsLoading(true);
+    
+    // Show sequence of processing messages to simulate backend ML processing
+    const processingStages = [
+      'Connecting to prediction server...',
+      'Analyzing crop requirements...',
+      'Retrieving soil quality parameters...',
+      'Analyzing weather patterns...',
+      'Running ML prediction model...',
+      'Optimizing yield calculations...',
+      'Finalizing prediction results...'
+    ];
+    
+    let currentStage = 0;
+    
+    // Update processing stage message every 500ms
+    const processingInterval = setInterval(() => {
+      if (currentStage < processingStages.length) {
+        setProcessingStage(processingStages[currentStage]);
+        currentStage++;
+      } else {
+        clearInterval(processingInterval);
+      }
+    }, 500);
+    
     setTimeout(() => {
+      clearInterval(processingInterval);
       console.log('⏳ ML model processing data...');
       
       console.log('🔍 Querying historical yield database for region:', formData.location);
@@ -175,8 +203,9 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       });
       
       setIsLoading(false);
+      setProcessingStage('');
       console.log('🏁 Prediction process completed successfully');
-    }, 2000);
+    }, 3500);
   };
 
   return (
@@ -193,6 +222,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
             onChange={handleChange}
             className="input-field w-full"
             required
+            disabled={isLoading}
           >
             <option value="" disabled>Select your county</option>
             {counties.map((county) => (
@@ -218,6 +248,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
             onChange={handleChange}
             className="input-field w-full"
             required
+            disabled={isLoading}
           />
         </div>
       </div>
@@ -234,6 +265,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
             onChange={handleChange}
             className="input-field w-full"
             required
+            disabled={isLoading}
           >
             <option value="" disabled>Select crop type</option>
             {cropTypes.map((crop) => (
@@ -254,6 +286,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
             value={formData.soilType}
             onChange={handleChange}
             className="input-field w-full"
+            disabled={isLoading}
           >
             {soilTypes.map((soil) => (
               <option key={soil} value={soil}>
@@ -274,6 +307,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
           value={formData.irrigationMethod}
           onChange={handleChange}
           className="input-field w-full"
+          disabled={isLoading}
         >
           {irrigationMethods.map((method) => (
             <option key={method} value={method}>
@@ -283,6 +317,18 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         </select>
       </div>
 
+      {isLoading && (
+        <div className="bg-primary/10 rounded-md p-4 my-4">
+          <div className="flex items-center gap-2 mb-2">
+            <LoaderCircle className="h-5 w-5 text-primary animate-spin" />
+            <p className="font-medium text-primary">{processingStage || 'Processing...'}</p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="bg-primary h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+          </div>
+        </div>
+      )}
+
       <button
         type="submit"
         className="btn-primary w-full py-3"
@@ -290,10 +336,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       >
         {isLoading ? (
           <div className="flex items-center justify-center">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <LoaderCircle className="animate-spin mr-2 h-5 w-5" />
             <span>Analyzing Data...</span>
           </div>
         ) : (

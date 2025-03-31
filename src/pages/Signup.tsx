@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -18,7 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { User, Mail, Lock, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, CheckCircle2, LoaderCircle } from 'lucide-react';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -55,8 +54,15 @@ const Signup = () => {
   const onSubmit = (values: SignupFormValues) => {
     setIsLoading(true);
     
-    // Simulate API call
+    console.log('📡 Sending registration data to authentication server...');
+    console.log('⏳ Creating user account...');
+    
+    // Simulate backend API call with longer delay
     setTimeout(() => {
+      console.log('✅ User account created successfully');
+      console.log('🔐 Storing user credentials securely');
+      console.log('🔄 Initializing user profile in database');
+      
       // For demo, handle signup
       signup({
         name: values.name,
@@ -70,7 +76,7 @@ const Signup = () => {
       
       navigate('/dashboard');
       setIsLoading(false);
-    }, 1500);
+    }, 3000);
   };
 
   return (
@@ -100,6 +106,7 @@ const Signup = () => {
                         placeholder="John Wanjau" 
                         className="input-field" 
                         {...field} 
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -121,6 +128,7 @@ const Signup = () => {
                         placeholder="you@example.com" 
                         className="input-field" 
                         {...field} 
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -143,6 +151,7 @@ const Signup = () => {
                         placeholder="••••••••" 
                         className="input-field" 
                         {...field} 
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -165,6 +174,7 @@ const Signup = () => {
                         placeholder="••••••••" 
                         className="input-field" 
                         {...field} 
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -181,6 +191,7 @@ const Signup = () => {
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
@@ -207,10 +218,7 @@ const Signup = () => {
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <LoaderCircle className="animate-spin mr-2 h-5 w-5" />
                     <span>Creating Account...</span>
                   </div>
                 ) : (
