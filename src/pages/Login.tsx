@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -78,7 +77,7 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // Simulate API call with longer delay
+    // Simulate API call with 4-second delay
     setTimeout(() => {
       console.log('⏳ Authentication server processing request...');
       console.log('🔐 Verifying credentials against secure database...');
@@ -123,7 +122,7 @@ const Login = () => {
       
       setIsLoading(false);
       console.log('🏁 Login process completed');
-    }, 3000);
+    }, 4000);
   };
 
   return (

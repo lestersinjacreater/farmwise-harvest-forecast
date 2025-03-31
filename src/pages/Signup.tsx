@@ -57,7 +57,7 @@ const Signup = () => {
     console.log('📡 Sending registration data to authentication server...');
     console.log('⏳ Creating user account...');
     
-    // Simulate backend API call with longer delay
+    // Simulate backend API call with 4-second delay
     setTimeout(() => {
       console.log('✅ User account created successfully');
       console.log('🔐 Storing user credentials securely');
@@ -76,7 +76,7 @@ const Signup = () => {
       
       navigate('/dashboard');
       setIsLoading(false);
-    }, 3000);
+    }, 4000);
   };
 
   return (

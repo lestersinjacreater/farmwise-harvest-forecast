@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
@@ -205,7 +204,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       setIsLoading(false);
       setProcessingStage('');
       console.log('🏁 Prediction process completed successfully');
-    }, 3500);
+    }, 4500);
   };
 
   return (
