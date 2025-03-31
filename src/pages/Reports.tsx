@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -16,6 +17,7 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState("yield");
 
   const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-indexed (0 is January)
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -50,20 +52,24 @@ const Reports = () => {
     };
   }, [isAuthenticated, navigate]);
 
-  const weatherData = [
-    { month: 'Jan', rainfall: 120, temperature: 23 },
-    { month: 'Feb', rainfall: 100, temperature: 24 },
-    { month: 'Mar', rainfall: 80, temperature: 25 },
-    { month: 'Apr', rainfall: 120, temperature: 24 },
-    { month: 'May', rainfall: 180, temperature: 23 },
-    { month: 'Jun', rainfall: 250, temperature: 22 },
-    { month: 'Jul', rainfall: 300, temperature: 21 },
-    { month: 'Aug', rainfall: 280, temperature: 21 },
-    { month: 'Sep', rainfall: 220, temperature: 22 },
-    { month: 'Oct', rainfall: 180, temperature: 23 },
-    { month: 'Nov', rainfall: 150, temperature: 24 },
-    { month: 'Dec', rainfall: 130, temperature: 24 },
-  ];
+  // Generate weather data from February this year to current month
+  const generateWeatherData = () => {
+    const months = [];
+    const startMonth = 1; // February is 1 in 0-indexed month
+    
+    for (let month = startMonth; month <= currentMonth; month++) {
+      const date = new Date(currentYear, month, 1);
+      months.push({
+        month: date.toLocaleString('default', { month: 'short' }),
+        rainfall: 80 + Math.round(Math.random() * 50) + (month * 20),
+        temperature: 20 + Math.round(Math.random() * 5) + (month < 6 ? month : 10 - month)
+      });
+    }
+    
+    return months;
+  };
+
+  const weatherData = generateWeatherData();
 
   const soilData = [
     { name: 'Nitrogen', value: 45 },
@@ -74,11 +80,10 @@ const Reports = () => {
   ];
 
   const generateAccuracyData = () => {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
     const months = [];
+    const startMonth = 1; // February is 1 in 0-indexed month
     
-    for (let month = 1; month <= currentMonth; month++) {
+    for (let month = startMonth; month <= currentMonth; month++) {
       const date = new Date(currentYear, month, 1);
       months.push({
         month: date.toLocaleString('default', { month: 'short' }),
@@ -101,18 +106,32 @@ const Reports = () => {
 
   const COLORS = ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444'];
 
-  const yieldData = predictions.length > 0 
-    ? predictions.map(pred => ({
+  // Update yieldData dates to be between February and now
+  const generateYieldData = () => {
+    if (predictions.length > 0) {
+      return predictions.map(pred => ({
         name: pred.crop,
         yield: typeof pred.yield === 'number' ? pred.yield : parseInt(pred.yield),
         date: pred.date
-      }))
-    : [
-        { name: 'Maize', yield: 2500, date: '2023-06-10' },
-        { name: 'Beans', yield: 1800, date: '2023-07-15' },
-        { name: 'Rice', yield: 4200, date: '2023-08-22' },
-        { name: 'Potatoes', yield: 18000, date: '2023-09-05' },
-      ];
+      }));
+    }
+    
+    // Generate sample data between February and now
+    const crops = ['Maize', 'Beans', 'Rice', 'Potatoes'];
+    return crops.map((crop, index) => {
+      // Spread dates between February and current month
+      const month = Math.min(1 + index, currentMonth);
+      const day = 5 + (index * 7) % 25;
+      const date = new Date(currentYear, month, day);
+      return {
+        name: crop,
+        yield: 1500 + Math.round(Math.random() * 3000) * (index + 1),
+        date: date.toISOString().split('T')[0]
+      };
+    });
+  };
+
+  const yieldData = generateYieldData();
 
   const factorInfluenceData = [
     { factor: 'Rainfall', influence: 35 },
@@ -123,29 +142,29 @@ const Reports = () => {
   ];
 
   const generateModelUpdates = () => {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
     const updates = [];
+    const startMonth = 1; // February is 1 in 0-indexed month
     
-    for (let month = 1; month <= currentMonth; month++) {
-      const date = new Date(currentYear, month, 15);
+    for (let month = startMonth; month <= currentMonth; month++) {
+      const day = 10 + (month % 20);
+      const date = new Date(currentYear, month, day);
       
       let title, description;
       
       if (month === 1) {
-        title = "February 2023 Update";
+        title = "February 2024 Update";
         description = "Initial machine learning model integration with historical yield data from Kenya Agricultural Research Institute.";
       } else if (month === 2) {
-        title = "March 2023 Update";
+        title = "March 2024 Update";
         description = "Added support for coffee and tea yield predictions. Implemented region-specific climate adjustment factors.";
       } else if (month === 3) {
-        title = "April 2023 Update";
+        title = "April 2024 Update";
         description = "Enhanced prediction accuracy for maize and beans by 8%. Integrated seasonal rainfall pattern analysis.";
       } else if (month === 4) {
-        title = "May 2023 Update";
+        title = "May 2024 Update";
         description = "Improved soil composition influence factors based on national soil survey data. Added pest prevalence prediction.";
       } else if (month === 5) {
-        title = "June 2023 Update";
+        title = "June 2024 Update";
         description = "Improved rainfall distribution modeling for Eastern Kenya regions. Added AI-powered recommendation engine.";
       } else {
         title = `${date.toLocaleString('default', { month: 'long' })} ${currentYear} Update`;
@@ -276,14 +295,14 @@ const Reports = () => {
                     Weather & Soil Condition Report
                   </CardTitle>
                   <CardDescription>
-                    Key weather and soil conditions affecting your crops
+                    Key weather and soil conditions affecting your crops from February {currentYear} to {new Date().toLocaleString('default', { month: 'long' })} {currentYear}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-8">
                     <h3 className="flex items-center gap-2 text-lg font-medium mb-4">
                       <Calendar className="h-4 w-4" />
-                      Annual Rainfall Distribution (mm)
+                      Rainfall Distribution (mm) - {currentYear}
                     </h3>
                     <div className="h-80 w-full">
                       <ResponsiveContainer width="100%" height="100%">

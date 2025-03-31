@@ -19,6 +19,7 @@ const PastPredictions = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     console.log('🔄 Fetching past prediction data from localStorage...');
@@ -29,8 +30,33 @@ const PastPredictions = () => {
     if (storedPredictions) {
       console.log('📡 Found predictions in localStorage');
       const parsedPredictions = JSON.parse(storedPredictions);
-      console.log('✅ Processed prediction data:', parsedPredictions);
-      setPredictions(parsedPredictions);
+      
+      // Ensure all dates are between February this year and now
+      const filteredPredictions = parsedPredictions.map((pred: Prediction) => {
+        const predDate = new Date(pred.date);
+        // If date is before February 1st of this year, update it to a date between Feb and now
+        if (predDate.getFullYear() < currentYear || 
+            (predDate.getFullYear() === currentYear && predDate.getMonth() < 1)) {
+          
+          // Set to a random date between February 1st and now
+          const startDate = new Date(currentYear, 1, 1); // February 1st
+          const now = new Date();
+          const randomTime = startDate.getTime() + Math.random() * (now.getTime() - startDate.getTime());
+          const newDate = new Date(randomTime);
+          
+          return {
+            ...pred,
+            date: newDate.toISOString().split('T')[0]
+          };
+        }
+        return pred;
+      });
+      
+      console.log('✅ Processed prediction data:', filteredPredictions);
+      setPredictions(filteredPredictions);
+      
+      // Update localStorage with the normalized dates
+      localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
     } else {
       console.log('ℹ️ No stored predictions found');
       setPredictions([]);
