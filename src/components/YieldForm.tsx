@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
@@ -70,8 +71,10 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     console.log('📡 Sending data to prediction API...');
     console.log('📤 Request payload:', JSON.stringify(formData, null, 2));
 
-    // Store form data in localStorage for the prediction result component
+    // Store complete form data in localStorage for use in reports
+    localStorage.setItem('lastFormData', JSON.stringify(formData));
     localStorage.setItem('lastCropType', formData.cropType);
+    localStorage.setItem('lastPredictionDate', new Date().toISOString());
 
     // Simulate API call with multiple processing stages
     setIsLoading(true);

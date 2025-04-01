@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -9,12 +8,22 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { FileBarChart, FileText, MessageSquare, BarChart2, Calendar, CloudRain, Droplets, Thermometer } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
+interface FormData {
+  location: string;
+  landSize: string;
+  cropType: string;
+  soilType: string;
+  irrigationMethod: string;
+}
+
 const Reports = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [predictions, setPredictions] = useState<any[]>([]);
   const [ratings, setRatings] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("yield");
+  const [formData, setFormData] = useState<FormData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth(); // 0-indexed (0 is January)
@@ -25,24 +34,46 @@ const Reports = () => {
       return;
     }
 
-    const storedPredictions = localStorage.getItem('predictions');
-    if (storedPredictions) {
-      const parsedPredictions = JSON.parse(storedPredictions);
-      setPredictions(parsedPredictions);
+    console.log('📊 Loading agricultural reports data...');
+    setIsLoading(true);
 
-      const ratingData = parsedPredictions
-        .filter((pred: any) => pred.rating !== null)
-        .map((pred: any) => ({
-          rating: pred.rating || 0,
-          crop: pred.crop
-        }));
-      setRatings(ratingData);
-    }
+    // Simulate loading data from a backend
+    setTimeout(() => {
+      // Get saved form data
+      const savedFormData = localStorage.getItem('lastFormData');
+      if (savedFormData) {
+        setFormData(JSON.parse(savedFormData));
+        console.log('📋 Retrieved form data from storage:', JSON.parse(savedFormData));
+      }
+
+      const storedPredictions = localStorage.getItem('predictions');
+      if (storedPredictions) {
+        const parsedPredictions = JSON.parse(storedPredictions);
+        setPredictions(parsedPredictions);
+        console.log('📈 Retrieved predictions from storage:', parsedPredictions.length, 'records');
+
+        const ratingData = parsedPredictions
+          .filter((pred: any) => pred.rating !== null)
+          .map((pred: any) => ({
+            rating: pred.rating || 0,
+            crop: pred.crop
+          }));
+        setRatings(ratingData);
+      }
+
+      setIsLoading(false);
+      console.log('✅ Agricultural reports data loaded successfully');
+    }, 4000);
 
     const handleStorageChange = () => {
       const updatedPredictions = localStorage.getItem('predictions');
       if (updatedPredictions) {
         setPredictions(JSON.parse(updatedPredictions));
+      }
+      
+      const updatedFormData = localStorage.getItem('lastFormData');
+      if (updatedFormData) {
+        setFormData(JSON.parse(updatedFormData));
       }
     };
 
@@ -52,17 +83,42 @@ const Reports = () => {
     };
   }, [isAuthenticated, navigate]);
 
-  // Generate weather data from February this year to current month
+  // Generate weather data from February this year to current month, influenced by location
   const generateWeatherData = () => {
     const months = [];
     const startMonth = 1; // February is 1 in 0-indexed month
     
+    // Location-based rainfall patterns
+    const locationFactors: Record<string, { rainfall: number, temperature: number }> = {
+      'Nairobi': { rainfall: 85, temperature: 22 },
+      'Mombasa': { rainfall: 110, temperature: 28 },
+      'Kisumu': { rainfall: 120, temperature: 25 },
+      'Nakuru': { rainfall: 90, temperature: 20 },
+      'Eldoret': { rainfall: 100, temperature: 18 },
+      'Kiambu': { rainfall: 85, temperature: 21 },
+      'Nyeri': { rainfall: 95, temperature: 19 },
+      'Meru': { rainfall: 90, temperature: 20 },
+      'Kakamega': { rainfall: 130, temperature: 24 }
+    };
+    
+    // Default factors if location not found
+    const defaultFactors = { rainfall: 100, temperature: 22 };
+    
+    // Get factors based on selected location or use default
+    const factors = formData ? 
+      (locationFactors[formData.location as keyof typeof locationFactors] || defaultFactors) : 
+      defaultFactors;
+    
     for (let month = startMonth; month <= currentMonth; month++) {
       const date = new Date(currentYear, month, 1);
+      
+      // Seasonal rainfall pattern - higher in April and May (months 3-4)
+      const seasonalRainfall = month >= 3 && month <= 4 ? 1.4 : 1.0;
+      
       months.push({
         month: date.toLocaleString('default', { month: 'short' }),
-        rainfall: 80 + Math.round(Math.random() * 50) + (month * 20),
-        temperature: 20 + Math.round(Math.random() * 5) + (month < 6 ? month : 10 - month)
+        rainfall: Math.round(factors.rainfall * seasonalRainfall + Math.random() * 40 + (month * 15)),
+        temperature: factors.temperature + Math.round(Math.random() * 3) + (month < 6 ? month * 0.5 : (10 - month) * 0.5)
       });
     }
     
@@ -71,13 +127,40 @@ const Reports = () => {
 
   const weatherData = generateWeatherData();
 
-  const soilData = [
-    { name: 'Nitrogen', value: 45 },
-    { name: 'Phosphorus', value: 30 },
-    { name: 'Potassium', value: 25 },
-    { name: 'Organic Matter', value: 15 },
-    { name: 'pH', value: 6.5 },
-  ];
+  // Generate soil data based on selected soil type
+  const generateSoilData = () => {
+    const defaultSoilData = [
+      { name: 'Nitrogen', value: 45 },
+      { name: 'Phosphorus', value: 30 },
+      { name: 'Potassium', value: 25 },
+      { name: 'Organic Matter', value: 15 },
+      { name: 'pH', value: 6.5 },
+    ];
+    
+    if (!formData) return defaultSoilData;
+    
+    // Adjust soil properties based on soil type
+    const soilFactors: Record<string, { n: number, p: number, k: number, om: number, ph: number }> = {
+      'Loam': { n: 1.0, p: 1.0, k: 1.0, om: 1.0, ph: 6.5 },
+      'Clay': { n: 1.2, p: 0.8, k: 1.1, om: 0.9, ph: 6.2 },
+      'Sandy': { n: 0.7, p: 0.6, k: 0.8, om: 0.7, ph: 5.8 },
+      'Silt': { n: 0.9, p: 1.1, k: 0.9, om: 0.8, ph: 6.8 },
+      'Peat': { n: 1.3, p: 0.7, k: 0.6, om: 1.6, ph: 5.5 },
+      'Chalky': { n: 0.8, p: 1.2, k: 0.7, om: 0.5, ph: 7.5 }
+    };
+    
+    const factors = soilFactors[formData.soilType] || soilFactors['Loam'];
+    
+    return [
+      { name: 'Nitrogen', value: Math.round(45 * factors.n) },
+      { name: 'Phosphorus', value: Math.round(30 * factors.p) },
+      { name: 'Potassium', value: Math.round(25 * factors.k) },
+      { name: 'Organic Matter', value: Math.round(15 * factors.om) },
+      { name: 'pH', value: factors.ph },
+    ];
+  };
+
+  const soilData = generateSoilData();
 
   const generateAccuracyData = () => {
     const months = [];
@@ -106,7 +189,7 @@ const Reports = () => {
 
   const COLORS = ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444'];
 
-  // Update yieldData dates to be between February and now
+  // Generate yield data using stored predictions or example data
   const generateYieldData = () => {
     if (predictions.length > 0) {
       return predictions.map(pred => ({
@@ -116,16 +199,23 @@ const Reports = () => {
       }));
     }
     
+    // Get the crop type from form data if available
+    const cropType = formData?.cropType || 'Maize';
+    
     // Generate sample data between February and now
-    const crops = ['Maize', 'Beans', 'Rice', 'Potatoes'];
+    const crops = [cropType, 'Beans', 'Rice', 'Potatoes'].filter((c, i) => i === 0 || c !== cropType);
     return crops.map((crop, index) => {
       // Spread dates between February and current month
       const month = Math.min(1 + index, currentMonth);
       const day = 5 + (index * 7) % 25;
       const date = new Date(currentYear, month, day);
+      
+      // Make the user's selected crop have a higher yield
+      const yieldBase = crop === cropType ? 2500 : 1500;
+      
       return {
         name: crop,
-        yield: 1500 + Math.round(Math.random() * 3000) * (index + 1),
+        yield: yieldBase + Math.round(Math.random() * 3000) * (index + 1),
         date: date.toISOString().split('T')[0]
       };
     });
@@ -133,13 +223,63 @@ const Reports = () => {
 
   const yieldData = generateYieldData();
 
-  const factorInfluenceData = [
-    { factor: 'Rainfall', influence: 35 },
-    { factor: 'Soil Type', influence: 25 },
-    { factor: 'Irrigation', influence: 20 },
-    { factor: 'Temperature', influence: 15 },
-    { factor: 'Other', influence: 5 },
-  ];
+  // Generate factor influence data based on form data
+  const generateFactorInfluenceData = () => {
+    if (!formData) {
+      return [
+        { factor: 'Rainfall', influence: 35 },
+        { factor: 'Soil Type', influence: 25 },
+        { factor: 'Irrigation', influence: 20 },
+        { factor: 'Temperature', influence: 15 },
+        { factor: 'Other', influence: 5 },
+      ];
+    }
+    
+    // Adjust factor influence based on irrigation method
+    let irrigationInfluence = 20;
+    switch(formData.irrigationMethod) {
+      case 'Drip': irrigationInfluence = 30; break;
+      case 'Sprinkler': irrigationInfluence = 25; break;
+      case 'Flood': irrigationInfluence = 20; break;
+      case 'Manual': irrigationInfluence = 15; break;
+      case 'None': irrigationInfluence = 5; break;
+    }
+    
+    // Adjust rainfall influence based on location
+    const rainfallFactors: Record<string, number> = {
+      'Mombasa': 25,
+      'Kisumu': 40,
+      'Nakuru': 35,
+      'Eldoret': 40,
+      'Nairobi': 30
+    };
+    const rainfallInfluence = rainfallFactors[formData.location as keyof typeof rainfallFactors] || 35;
+    
+    // Adjust soil influence based on soil type
+    const soilInfluenceFactors: Record<string, number> = {
+      'Loam': 30,
+      'Clay': 25,
+      'Sandy': 20,
+      'Silt': 25,
+      'Peat': 35,
+      'Chalky': 15
+    };
+    const soilInfluence = soilInfluenceFactors[formData.soilType] || 25;
+    
+    // Calculate temperature influence (remainder to 100)
+    const otherInfluence = 5;
+    const temperatureInfluence = 100 - rainfallInfluence - soilInfluence - irrigationInfluence - otherInfluence;
+    
+    return [
+      { factor: 'Rainfall', influence: rainfallInfluence },
+      { factor: 'Soil Type', influence: soilInfluence },
+      { factor: 'Irrigation', influence: irrigationInfluence },
+      { factor: 'Temperature', influence: temperatureInfluence },
+      { factor: 'Other', influence: otherInfluence },
+    ];
+  };
+
+  const factorInfluenceData = generateFactorInfluenceData();
 
   const generateModelUpdates = () => {
     const updates = [];
@@ -183,6 +323,43 @@ const Reports = () => {
   };
   
   const modelUpdates = generateModelUpdates();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pb-20">
+        <Navbar />
+        <div className="pt-24 px-4 max-w-6xl mx-auto">
+          <h1 className="text-2xl font-bold mb-8">Agricultural Reports & Analytics</h1>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Loading Reports</CardTitle>
+                <CardDescription>
+                  Retrieving your agricultural analytics data...
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 mb-4">
+                  <LoaderCircle className="h-5 w-5 text-primary animate-spin" />
+                  <p>Loading agricultural analytics from database...</p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                  <div className="bg-primary h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-[200px] w-full bg-gray-100 rounded-md animate-pulse"></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="h-[150px] bg-gray-100 rounded-md animate-pulse"></div>
+                    <div className="h-[150px] bg-gray-100 rounded-md animate-pulse"></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20">
