@@ -340,7 +340,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 mb-4">
-                  <LoaderCircle className="h-5 w-5 text-primary animate-spin" />
+                  <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                   <p>Loading agricultural analytics from database...</p>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
