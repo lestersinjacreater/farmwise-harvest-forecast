@@ -48,6 +48,9 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
         localStorage.setItem('predictions', JSON.stringify(predictions));
         setRating(rating);
         
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('predictionsUpdated'));
+        
         toast({
           title: "Rating Saved",
           description: `You rated this prediction ${rating} star${rating !== 1 ? 's' : ''}.`,

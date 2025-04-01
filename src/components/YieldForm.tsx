@@ -148,8 +148,14 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       // Save back to localStorage
       localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
       
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('predictionsUpdated'));
+      
       // Also save form data for reports
       localStorage.setItem('lastFormData', JSON.stringify(formData));
+      
+      console.log('💾 Saved new prediction to storage:', predictionWithMeta);
+      console.log('📊 Storage now contains', updatedPredictions.length, 'predictions');
       
       return predictionWithMeta;
     };

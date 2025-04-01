@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star, StarHalf, StarOff, LoaderCircle } from 'lucide-react';
+import { Star, LoaderCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 type Prediction = {
@@ -48,31 +48,60 @@ const PastPredictions = () => {
     // Fetch past predictions from storage with a 4-second delay
     setTimeout(() => {
       clearInterval(messageInterval);
-      
-      // Get predictions from localStorage
-      const storedPredictions = localStorage.getItem('predictions');
-      const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
-      
-      // Map to correct format
-      const formattedPredictions = predictions.map((pred: any) => ({
-        id: pred.id,
-        cropType: pred.crop,
-        yieldValue: pred.yield,
-        unit: pred.unit,
-        date: pred.date,
-        rating: pred.rating
-      }));
-      
-      setPastPredictions(formattedPredictions);
-      
+      loadPredictionsFromStorage();
       setIsLoading(false);
-      console.log('✅ Past predictions loaded successfully:', formattedPredictions.length, 'records');
+      console.log('✅ Past predictions loaded successfully');
     }, 4000);
     
     return () => {
       clearInterval(messageInterval);
     };
   }, [user?.email]);
+
+  // Add a listener for storage events so component updates when predictions change
+  useEffect(() => {
+    // Function to handle storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'predictions') {
+        loadPredictionsFromStorage();
+      }
+    };
+
+    // Also add a custom event listener for local changes
+    const handleLocalStorageChange = () => {
+      loadPredictionsFromStorage();
+    };
+
+    // Add event listeners
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('predictionsUpdated', handleLocalStorageChange);
+
+    // Clean up listeners on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('predictionsUpdated', handleLocalStorageChange);
+    };
+  }, []);
+
+  // Function to load predictions from localStorage
+  const loadPredictionsFromStorage = () => {
+    // Get predictions from localStorage
+    const storedPredictions = localStorage.getItem('predictions');
+    const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
+    
+    // Map to correct format
+    const formattedPredictions = predictions.map((pred: any) => ({
+      id: pred.id,
+      cropType: pred.crop,
+      yieldValue: pred.yield,
+      unit: pred.unit,
+      date: pred.date,
+      rating: pred.rating
+    }));
+    
+    setPastPredictions(formattedPredictions);
+    console.log('📊 Loaded', formattedPredictions.length, 'predictions from storage');
+  };
 
   // Function to handle rating updates
   const handleRating = (predictionId: string, rating: number) => {
@@ -92,6 +121,9 @@ const PastPredictions = () => {
       );
       
       localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('predictionsUpdated'));
       
       toast({
         title: "Rating Saved",
