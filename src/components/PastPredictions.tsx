@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star, LoaderCircle } from 'lucide-react';
+import { Star, LoaderCircle, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 type Prediction = {
@@ -23,10 +22,8 @@ const PastPredictions = () => {
 
   useEffect(() => {
     console.log('📊 Loading past predictions history...');
-    
     setIsLoading(true);
-    
-    // Show a series of loading messages to simulate backend processing
+
     const loadingMessages = [
       'Initializing data retrieval...',
       'Connecting to prediction database...',
@@ -34,7 +31,7 @@ const PastPredictions = () => {
       'Processing prediction records...',
       'Preparing results for display...'
     ];
-    
+
     let messageIndex = 0;
     const messageInterval = setInterval(() => {
       if (messageIndex < loadingMessages.length) {
@@ -44,52 +41,43 @@ const PastPredictions = () => {
         clearInterval(messageInterval);
       }
     }, 800);
-    
-    // Fetch past predictions from storage with a 4-second delay
+
     setTimeout(() => {
       clearInterval(messageInterval);
       loadPredictionsFromStorage();
       setIsLoading(false);
       console.log('✅ Past predictions loaded successfully');
     }, 4000);
-    
+
     return () => {
       clearInterval(messageInterval);
     };
   }, [user?.email]);
 
-  // Add a listener for storage events so component updates when predictions change
   useEffect(() => {
-    // Function to handle storage changes
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'predictions') {
         loadPredictionsFromStorage();
       }
     };
 
-    // Also add a custom event listener for local changes
     const handleLocalStorageChange = () => {
       loadPredictionsFromStorage();
     };
 
-    // Add event listeners
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('predictionsUpdated', handleLocalStorageChange);
 
-    // Clean up listeners on unmount
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('predictionsUpdated', handleLocalStorageChange);
     };
   }, []);
 
-  // Function to load predictions from localStorage
   const loadPredictionsFromStorage = () => {
-    // Get predictions from localStorage
     const storedPredictions = localStorage.getItem('predictions');
     const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
-    
-    // Map to correct format
+
     const formattedPredictions = predictions.map((pred: any) => ({
       id: pred.id,
       cropType: pred.crop,
@@ -98,33 +86,47 @@ const PastPredictions = () => {
       date: pred.date,
       rating: pred.rating
     }));
-    
+
     setPastPredictions(formattedPredictions);
     console.log('📊 Loaded', formattedPredictions.length, 'predictions from storage');
   };
 
-  // Function to handle rating updates
-  const handleRating = (predictionId: string, rating: number) => {
-    // Update the UI first for immediate feedback
-    setPastPredictions(prevPredictions => 
-      prevPredictions.map(pred => 
-        pred.id === predictionId ? {...pred, rating} : pred
-      )
-    );
-    
-    // Update in localStorage
+  const handleDelete = (predictionId: string) => {
+    const updatedPredictions = pastPredictions.filter(pred => pred.id !== predictionId);
+    setPastPredictions(updatedPredictions);
+
     const storedPredictions = localStorage.getItem('predictions');
     if (storedPredictions) {
       const predictions = JSON.parse(storedPredictions);
-      const updatedPredictions = predictions.map((pred: any) => 
-        pred.id === predictionId ? {...pred, rating} : pred
-      );
-      
-      localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
-      
-      // Dispatch custom event to notify other components
+      const filteredPredictions = predictions.filter((pred: any) => pred.id !== predictionId);
+      localStorage.setItem('predictions', JSON.stringify(filteredPredictions));
+
       window.dispatchEvent(new Event('predictionsUpdated'));
-      
+
+      toast({
+        title: "Prediction Deleted",
+        description: "The prediction has been successfully removed.",
+      });
+    }
+  };
+
+  const handleRating = (predictionId: string, rating: number) => {
+    setPastPredictions(prevPredictions =>
+      prevPredictions.map(pred =>
+        pred.id === predictionId ? { ...pred, rating } : pred
+      )
+    );
+
+    const storedPredictions = localStorage.getItem('predictions');
+    if (storedPredictions) {
+      const predictions = JSON.parse(storedPredictions);
+      const updatedPredictions = predictions.map((pred: any) =>
+        pred.id === predictionId ? { ...pred, rating } : pred
+      );
+
+      localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+      window.dispatchEvent(new Event('predictionsUpdated'));
+
       toast({
         title: "Rating Saved",
         description: `You rated this prediction ${rating} star${rating !== 1 ? 's' : ''}.`,
@@ -132,18 +134,17 @@ const PastPredictions = () => {
     }
   };
 
-  // Function to render star ratings
   const renderStarRating = (prediction: Prediction) => {
     const { id, rating } = prediction;
-    
+
     return (
       <div className="flex mt-2">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star 
-            key={`star-${id}-${star}`} 
+          <Star
+            key={`star-${id}-${star}`}
             className={`h-4 w-4 cursor-pointer transition-colors ${
-              rating && rating >= star 
-                ? 'text-yellow-500 fill-yellow-500' 
+              rating && rating >= star
+                ? 'text-yellow-500 fill-yellow-500'
                 : 'text-gray-300 hover:text-yellow-400'
             }`}
             onClick={() => handleRating(id, star)}
@@ -189,6 +190,13 @@ const PastPredictions = () => {
                     <p className="text-xs text-gray-600 mb-1">Rate this prediction:</p>
                     {renderStarRating(prediction)}
                   </div>
+                  <button
+                    onClick={() => handleDelete(prediction.id)}
+                    className="mt-2 text-red-500 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </button>
                 </div>
               ))}
             </div>
