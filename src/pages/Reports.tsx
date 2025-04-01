@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -5,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { FileBarChart, FileText, MessageSquare, BarChart2, Calendar, CloudRain, Droplets, Thermometer } from "lucide-react";
+import { FileBarChart, FileText, MessageSquare, BarChart2, Calendar, CloudRain, Droplets, Thermometer, LoaderCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 interface FormData {
@@ -340,7 +341,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <LoaderCircle className="h-5 w-5 text-primary animate-spin" />
                   <p>Loading agricultural analytics from database...</p>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">

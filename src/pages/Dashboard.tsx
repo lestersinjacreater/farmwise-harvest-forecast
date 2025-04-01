@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { Star } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import YieldForm from '@/components/YieldForm';
 import PredictionResult from '@/components/PredictionResult';
@@ -10,10 +12,11 @@ import PastPredictions from '@/components/PastPredictions';
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [prediction, setPrediction] = useState<{ yield: number; unit: string } | null>(null);
+  const [prediction, setPrediction] = useState<{ yield: number; unit: string, id?: string } | null>(null);
   const [welcomeAnimation, setWelcomeAnimation] = useState(true);
   const [seasonalAlert, setSeasonalAlert] = useState("");
   const [hasPredictions, setHasPredictions] = useState(false);
+  const [currentRating, setCurrentRating] = useState<number | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -40,7 +43,7 @@ const Dashboard = () => {
         console.log('📋 Found existing predictions in storage');
       }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user?.email]);
 
   // Set a random seasonal alert on page load
   useEffect(() => {
@@ -62,10 +65,37 @@ const Dashboard = () => {
     }, 800);
   }, []);
 
-  const handlePrediction = (result: { yield: number; unit: string }) => {
+  const handlePrediction = (result: { yield: number; unit: string, id: string }) => {
     console.log('📈 Received prediction result from ML model:', result);
     setPrediction(result);
-    setHasPredictions(true); // Set to true when a prediction is made
+    setHasPredictions(true);
+    setCurrentRating(null); // Reset rating for new prediction
+  };
+
+  // Handle rating
+  const handleRating = (rating: number) => {
+    if (!prediction || !prediction.id) return;
+    
+    // Get existing predictions
+    const storedPredictions = localStorage.getItem('predictions');
+    if (storedPredictions) {
+      const predictions = JSON.parse(storedPredictions);
+      
+      // Find the prediction with matching ID
+      const predictionIndex = predictions.findIndex((p: any) => p.id === prediction.id);
+      if (predictionIndex !== -1) {
+        predictions[predictionIndex].rating = rating;
+        
+        // Save back to localStorage
+        localStorage.setItem('predictions', JSON.stringify(predictions));
+        setCurrentRating(rating);
+        
+        toast({
+          title: "Rating Saved",
+          description: `You rated this prediction ${rating} star${rating !== 1 ? 's' : ''}.`,
+        });
+      }
+    }
   };
 
   // Current time-based greeting
@@ -185,7 +215,33 @@ const Dashboard = () => {
                 <YieldForm onPredict={handlePrediction} />
               </div>
               
-              {prediction && <PredictionResult prediction={prediction} />}
+              {prediction && (
+                <div className="glass-panel rounded-xl p-6">
+                  <PredictionResult prediction={prediction} />
+                  
+                  {/* Rating UI */}
+                  <div className="mt-6 border-t pt-4">
+                    <p className="mb-2 font-medium">Rate this prediction:</p>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button 
+                          key={rating}
+                          onClick={() => handleRating(rating)}
+                          className="focus:outline-none"
+                        >
+                          <Star 
+                            className={`h-7 w-7 cursor-pointer transition-all ${
+                              currentRating && currentRating >= rating 
+                                ? 'text-yellow-500 fill-yellow-500' 
+                                : 'text-gray-300 hover:text-yellow-400'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Past Predictions Section - only show if predictions exist */}
               {hasPredictions && (

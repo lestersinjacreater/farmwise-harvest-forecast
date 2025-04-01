@@ -1,196 +1,87 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Star } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { Link } from 'react-router-dom';
-import { FileBarChart } from 'lucide-react';
-
-interface PredictionResultProps {
+type PredictionResultProps = {
   prediction: {
     yield: number;
     unit: string;
-  } | null;
-}
+    id?: string;
+  };
+};
 
-const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [count, setCount] = useState(0);
-  const [saved, setSaved] = useState(false);
-
-  console.log('🔢 Initializing prediction result component');
-
-  useEffect(() => {
-    if (prediction) {
-      console.log('📊 New prediction received:', prediction);
-      setIsVisible(true);
-      setCount(0);
-      setSaved(false);
-      
-      console.log('🎬 Starting result animation sequence');
-      // Animate counting up to the yield value
-      const duration = 1500; // ms
-      const interval = 20; // ms
-      const steps = duration / interval;
-      const increment = prediction.yield / steps;
-      
-      console.log('⚙️ Animation parameters:', { duration, interval, steps, increment });
-      
-      let current = 0;
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= prediction.yield) {
-          console.log('✅ Animation complete, setting final value:', prediction.yield);
-          setCount(prediction.yield);
-          clearInterval(timer);
-        } else {
-          setCount(Math.floor(current));
-        }
-      }, interval);
-      
-      return () => {
-        console.log('🧹 Cleaning up animation timer');
-        clearInterval(timer);
-      };
-    } else {
-      console.log('❌ No prediction data available, hiding result');
-      setIsVisible(false);
-    }
-  }, [prediction]);
-
-  if (!prediction || !isVisible) return null;
-
-  console.log('🔄 Rendering prediction result UI');
-
-  const unitParts = prediction.unit.split('/');
-  const yieldUnit = unitParts[0];
-  const areaUnit = unitParts[1] || 'hectare';
-
-  console.log('📏 Parsed units:', { yieldUnit, areaUnit });
-
-  // Load random tips
-  console.log('📚 Fetching random agricultural tips from knowledge base');
-  const tips = [
-    "Consider using drought-resistant varieties if your area has unpredictable rainfall.",
-    "Proper spacing can increase your yield by allowing each plant adequate access to nutrients.",
-    "Regular monitoring for pests and diseases can help prevent significant crop losses.",
-    "Applying organic fertilizer can improve soil health and boost yields sustainably.",
-    "Implement crop rotation to prevent soil nutrient depletion and reduce pest buildup.",
-    "Mulching can help retain soil moisture and regulate temperature, especially in dry regions.",
-    "Ensure proper irrigation techniques to provide consistent water supply without overwatering.",
-    "Test your soil regularly to determine nutrient levels and apply fertilizers accordingly.",
-    "Intercropping can improve soil fertility and reduce pest problems by enhancing biodiversity.",
-    "Harvest crops at the right time to maximize yield quality and market value.",
-    "Use natural predators like ladybugs and birds to control pests in an eco-friendly way.",
-    "Invest in post-harvest storage solutions to reduce losses and maintain crop quality.",
-    "Utilize weather forecasts to plan farming activities and reduce risks from extreme conditions.",
-    "Applying compost can enrich the soil with essential nutrients and improve its structure.",
-    "Select disease-resistant crop varieties to minimize losses and improve productivity.",
-    "Maintain farm records to track progress, identify patterns, and improve future planning.",
-    "Plant trees around your farm to act as windbreaks and reduce soil erosion.",
-    "Use smart farming apps or digital tools to get real-time insights and optimize farm management."
-  ];
-
-  console.log('🎲 Selecting random tips for this prediction');
-  const randomTips = [...tips].sort(() => 0.5 - Math.random()).slice(0, 2);
-  console.log('✅ Selected tips:', randomTips);
+const PredictionResult = ({ prediction }: PredictionResultProps) => {
+  const [rating, setRating] = useState<number | null>(null);
   
-  const handleSave = () => {
-    console.log('💾 Saving prediction to local storage...');
-    
-    // Create a new prediction object with unique ID and current date
-    const newPrediction = {
-      id: uuidv4(),
-      date: new Date().toISOString().split('T')[0],
-      crop: localStorage.getItem('lastCropType') || 'Maize', // Get from form data if available
-      yield: prediction.yield,
-      unit: prediction.unit,
-      rating: null
-    };
-    
-    console.log('📦 New prediction object:', newPrediction);
-    
-    // Get existing predictions from localStorage
-    const existingPredictionsJSON = localStorage.getItem('predictions');
-    const existingPredictions = existingPredictionsJSON ? JSON.parse(existingPredictionsJSON) : [];
-    
-    console.log('📂 Existing predictions in storage:', existingPredictions.length);
-    
-    // Add new prediction to the array
-    const updatedPredictions = [newPrediction, ...existingPredictions];
-    
-    // Save back to localStorage
-    localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
-    console.log('✅ Prediction saved successfully to local storage');
-    
-    // Dispatch a storage event to notify other components
-    window.dispatchEvent(new Event('storage'));
-    
-    setSaved(true);
+  useEffect(() => {
+    // Check if this prediction has a saved rating
+    if (prediction.id) {
+      const storedPredictions = localStorage.getItem('predictions');
+      if (storedPredictions) {
+        const predictions = JSON.parse(storedPredictions);
+        const currentPrediction = predictions.find((p: any) => p.id === prediction.id);
+        if (currentPrediction && currentPrediction.rating !== null) {
+          setRating(currentPrediction.rating);
+        }
+      }
+    }
+  }, [prediction.id]);
+
+  const handleRating = (rating: number) => {
+    // Get existing predictions
+    const storedPredictions = localStorage.getItem('predictions');
+    if (storedPredictions) {
+      const predictions = JSON.parse(storedPredictions);
+      
+      // Find the most recent prediction (assuming it's the one we're viewing)
+      if (predictions.length > 0) {
+        const latestPrediction = predictions[predictions.length - 1];
+        latestPrediction.rating = rating;
+        
+        // Save back to localStorage
+        localStorage.setItem('predictions', JSON.stringify(predictions));
+        setRating(rating);
+      }
+    }
   };
 
+  // Format the yield value with commas for thousands
+  const formattedYield = prediction.yield.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
   return (
-    <div className="mt-8 animate-scale-in">
-      <div className="glass-panel rounded-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-farm-leaf to-farm-leaf-light p-4 text-white">
-          <h3 className="text-xl font-bold">Yield Prediction Results</h3>
-        </div>
-        
-        <div className="p-6">
-          <div className="text-center mb-6">
-            <div className="text-4xl font-bold text-farm-leaf mb-2">
-              {count.toLocaleString()} <span className="text-2xl">{yieldUnit}</span>
-            </div>
-            <p className="text-muted-foreground">Estimated total yield for your farm</p>
+    <Card className="glass-panel rounded-lg shadow-md animate-fade-in">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Prediction Result</CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground mb-2">Estimated Crop Yield</p>
+          <div className="text-4xl font-bold text-farm-leaf mb-2">
+            {formattedYield} <span className="text-2xl">{prediction.unit}</span>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="glass-panel rounded-lg p-4">
-              <div className="text-xl font-semibold mb-1">{Math.round(prediction.yield / 10).toLocaleString()} {yieldUnit}</div>
-              <p className="text-sm text-muted-foreground">Per 0.1 {areaUnit}</p>
-            </div>
-            <div className="glass-panel rounded-lg p-4">
-              <div className="text-xl font-semibold mb-1">{(prediction.yield / 100).toLocaleString()} {yieldUnit}</div>
-              <p className="text-sm text-muted-foreground">Per 0.01 {areaUnit}</p>
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <h4 className="text-lg font-semibold mb-2">Recommendations</h4>
-            <ul className="space-y-2">
-              {randomTips.map((tip, index) => (
-                <li key={index} className="leaf-bullet text-foreground/80">{tip}</li>
-              ))}
-            </ul>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mb-4">
-            Note: This prediction is based on historical data and current input parameters. 
-            Actual yields may vary due to weather conditions, farming practices, and other factors.
+          <p className="text-sm text-muted-foreground">
+            This prediction is based on your farm details and our machine learning model.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-between gap-4">
-            <Link 
-              to="/reports" 
-              className="px-4 py-2 rounded-md flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
-            >
-              <FileBarChart size={18} />
-              View Detailed Reports
-            </Link>
-            
-            <button 
-              onClick={handleSave}
-              disabled={saved}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                saved 
-                  ? 'bg-green-100 text-green-700 cursor-not-allowed' 
-                  : 'bg-farm-leaf text-white hover:bg-farm-leaf-light'
-              }`}
-            >
-              {saved ? '✓ Saved to History' : 'Save Prediction'}
-            </button>
+          <div className="mt-4">
+            <p className="mb-2">Rate this prediction:</p>
+            <div className="flex gap-1 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star 
+                  key={star} 
+                  className={`h-6 w-6 cursor-pointer ${
+                    rating && rating >= star 
+                      ? 'text-yellow-500 fill-yellow-500' 
+                      : 'text-gray-300'
+                  }`}
+                  onClick={() => handleRating(star)}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
