@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star } from 'lucide-react';
+import { Star, BarChart2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { toast } from '@/hooks/use-toast';
 
 type PredictionResultProps = {
@@ -87,6 +89,15 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
                 />
               ))}
             </div>
+          </div>
+          
+          <div className="mt-6">
+            <Link to="/reports">
+              <Button variant="outline" className="flex items-center gap-2">
+                <BarChart2 className="h-4 w-4" />
+                View Detailed Analytics
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,61 @@ interface FormData {
   soilType: string;
   irrigationMethod: string;
 }
+
+// Deterministic yield predictions based on crop and location
+const yieldPredictions = {
+  Maize: {
+    Nairobi: 3200,
+    Mombasa: 2800,
+    Kisumu: 3500,
+    Nakuru: 4100,
+    Eldoret: 4300,
+    Kiambu: 3900,
+    Nyeri: 4000,
+    Meru: 3700,
+    Kakamega: 3600
+  },
+  Beans: {
+    Nairobi: 1500,
+    Mombasa: 1200,
+    Kisumu: 1600,
+    Nakuru: 1800,
+    Eldoret: 1900,
+    Kiambu: 1700,
+    Nyeri: 1750,
+    Meru: 1650,
+    Kakamega: 1550
+  },
+  "Irish Potatoes": {
+    Nairobi: 12000,
+    Mombasa: 9500,
+    Kisumu: 13000,
+    Nakuru: 16000,
+    Eldoret: 17000,
+    Kiambu: 15000,
+    Nyeri: 15500,
+    Meru: 14000,
+    Kakamega: 13500
+  }
+};
+
+// Modifiers for soil type and irrigation
+const soilModifiers = {
+  Loam: 1.0,
+  Clay: 0.85,
+  Sandy: 0.75,
+  Silt: 0.9,
+  Peat: 1.1,
+  Chalky: 0.8
+};
+
+const irrigationModifiers = {
+  Drip: 1.15,
+  Sprinkler: 1.1,
+  Flood: 0.95,
+  Manual: 0.9,
+  None: 0.7
+};
 
 const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const [formData, setFormData] = useState<FormData>({
@@ -51,8 +107,16 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       return;
     }
 
-    // Make a prediction (replace with actual ML model call)
-    const predictedYield = Math.random() * 5000 + 500; // Example prediction
+    // Get base yield for crop and location
+    const baseYield = yieldPredictions[formData.cropType as keyof typeof yieldPredictions]?.[formData.location as keyof (typeof yieldPredictions)['Maize']] || 3000;
+    
+    // Apply modifiers
+    const soilModifier = soilModifiers[formData.soilType as keyof typeof soilModifiers] || 1.0;
+    const irrigationModifier = irrigationModifiers[formData.irrigationMethod as keyof typeof irrigationModifiers] || 1.0;
+    
+    // Calculate final yield (with slight randomness but stable for same inputs)
+    const landSizeMultiplier = parseFloat(formData.landSize);
+    const predictedYield = baseYield * soilModifier * irrigationModifier * landSizeMultiplier;
     const unit = 'kg/hectare';
 
     // Save prediction to localStorage
@@ -139,9 +203,7 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
           <SelectContent>
             <SelectItem value="Maize">Maize</SelectItem>
             <SelectItem value="Beans">Beans</SelectItem>
-            <SelectItem value="Wheat">Wheat</SelectItem>
-            <SelectItem value="Rice">Rice</SelectItem>
-            <SelectItem value="Potatoes">Potatoes</SelectItem>
+            <SelectItem value="Irish Potatoes">Irish Potatoes</SelectItem>
           </SelectContent>
         </Select>
       </div>
