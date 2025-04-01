@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, StarHalf, StarOff, LoaderCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 type Prediction = {
   id: string;
@@ -73,29 +74,48 @@ const PastPredictions = () => {
     };
   }, [user?.email]);
 
-  // Function to render star ratings
-  const renderStarRating = (rating: number | null | undefined) => {
-    if (rating === null || rating === undefined) {
-      return (
-        <div className="flex items-center gap-1 mt-1">
-          <StarOff className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs text-gray-500">Not rated yet</span>
-        </div>
-      );
-    }
+  // Function to handle rating updates
+  const handleRating = (predictionId: string, rating: number) => {
+    // Update the UI first for immediate feedback
+    setPastPredictions(prevPredictions => 
+      prevPredictions.map(pred => 
+        pred.id === predictionId ? {...pred, rating} : pred
+      )
+    );
     
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    // Update in localStorage
+    const storedPredictions = localStorage.getItem('predictions');
+    if (storedPredictions) {
+      const predictions = JSON.parse(storedPredictions);
+      const updatedPredictions = predictions.map((pred: any) => 
+        pred.id === predictionId ? {...pred, rating} : pred
+      );
+      
+      localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+      
+      toast({
+        title: "Rating Saved",
+        description: `You rated this prediction ${rating} star${rating !== 1 ? 's' : ''}.`,
+      });
+    }
+  };
+
+  // Function to render star ratings
+  const renderStarRating = (prediction: Prediction) => {
+    const { id, rating } = prediction;
     
     return (
-      <div className="flex mt-1">
-        {[...Array(fullStars)].map((_, i) => (
-          <Star key={`full-${i}`} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-        ))}
-        {hasHalfStar && <StarHalf className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
-        {[...Array(emptyStars)].map((_, i) => (
-          <Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />
+      <div className="flex mt-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star 
+            key={`star-${id}-${star}`} 
+            className={`h-4 w-4 cursor-pointer transition-colors ${
+              rating && rating >= star 
+                ? 'text-yellow-500 fill-yellow-500' 
+                : 'text-gray-300 hover:text-yellow-400'
+            }`}
+            onClick={() => handleRating(id, star)}
+          />
         ))}
       </div>
     );
@@ -133,7 +153,10 @@ const PastPredictions = () => {
                   <p className="text-xs text-gray-500">
                     Date: {prediction.date}
                   </p>
-                  {renderStarRating(prediction.rating)}
+                  <div className="mt-1">
+                    <p className="text-xs text-gray-600 mb-1">Rate this prediction:</p>
+                    {renderStarRating(prediction)}
+                  </div>
                 </div>
               ))}
             </div>

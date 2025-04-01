@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 type PredictionResultProps = {
   prediction: {
@@ -28,19 +30,26 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
   }, [prediction.id]);
 
   const handleRating = (rating: number) => {
+    if (!prediction.id) return;
+    
     // Get existing predictions
     const storedPredictions = localStorage.getItem('predictions');
     if (storedPredictions) {
       const predictions = JSON.parse(storedPredictions);
       
-      // Find the most recent prediction (assuming it's the one we're viewing)
-      if (predictions.length > 0) {
-        const latestPrediction = predictions[predictions.length - 1];
-        latestPrediction.rating = rating;
+      // Find the prediction with matching ID
+      const predictionIndex = predictions.findIndex((p: any) => p.id === prediction.id);
+      if (predictionIndex !== -1) {
+        predictions[predictionIndex].rating = rating;
         
         // Save back to localStorage
         localStorage.setItem('predictions', JSON.stringify(predictions));
         setRating(rating);
+        
+        toast({
+          title: "Rating Saved",
+          description: `You rated this prediction ${rating} star${rating !== 1 ? 's' : ''}.`,
+        });
       }
     }
   };
@@ -69,10 +78,10 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star 
                   key={star} 
-                  className={`h-6 w-6 cursor-pointer ${
+                  className={`h-6 w-6 cursor-pointer transition-colors ${
                     rating && rating >= star 
                       ? 'text-yellow-500 fill-yellow-500' 
-                      : 'text-gray-300'
+                      : 'text-gray-300 hover:text-yellow-400'
                   }`}
                   onClick={() => handleRating(star)}
                 />
