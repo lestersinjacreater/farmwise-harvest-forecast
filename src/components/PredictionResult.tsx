@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, BarChart2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from '@/hooks/use-toast';
+import { Skeleton } from "@/components/ui/skeleton";
 
 type PredictionResultProps = {
   prediction: {
@@ -16,8 +17,15 @@ type PredictionResultProps = {
 
 const PredictionResult = ({ prediction }: PredictionResultProps) => {
   const [rating, setRating] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    // Simulate loading of prediction results
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
     // Check if this prediction has a saved rating
     if (prediction.id) {
       const storedPredictions = localStorage.getItem('predictions');
@@ -29,6 +37,8 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
         }
       }
     }
+    
+    return () => clearTimeout(timer);
   }, [prediction.id]);
 
   const handleRating = (rating: number) => {
@@ -68,41 +78,55 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
         <CardTitle className="text-lg font-semibold">Prediction Result</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Estimated Crop Yield</p>
-          <div className="text-4xl font-bold text-farm-leaf mb-2">
-            {formattedYield} <span className="text-2xl">{prediction.unit}</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            This prediction is based on your farm details and our machine learning model.
-          </p>
-          
-          <div className="mt-4">
-            <p className="mb-2">Rate this prediction:</p>
-            <div className="flex gap-1 justify-center">
+        {isLoading ? (
+          <div className="text-center space-y-4">
+            <Skeleton className="h-6 w-3/4 mx-auto" />
+            <Skeleton className="h-10 w-1/2 mx-auto" />
+            <Skeleton className="h-4 w-5/6 mx-auto" />
+            <div className="flex gap-1 justify-center mt-6">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star 
-                  key={star} 
-                  className={`h-6 w-6 cursor-pointer transition-colors ${
-                    rating && rating >= star 
-                      ? 'text-yellow-500 fill-yellow-500' 
-                      : 'text-gray-300 hover:text-yellow-400'
-                  }`}
-                  onClick={() => handleRating(star)}
-                />
+                <Skeleton key={star} className="h-6 w-6 rounded-full" />
               ))}
             </div>
+            <Skeleton className="h-10 w-48 mx-auto mt-4" />
           </div>
-          
-          <div className="mt-6">
-            <Link to="/reports">
-              <Button variant="outline" className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4" />
-                View Detailed Analytics
-              </Button>
-            </Link>
+        ) : (
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-2">Estimated Crop Yield</p>
+            <div className="text-4xl font-bold text-farm-leaf mb-2">
+              {formattedYield} <span className="text-2xl">{prediction.unit}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This prediction is based on your farm details and our machine learning model.
+            </p>
+            
+            <div className="mt-4">
+              <p className="mb-2">Rate this prediction:</p>
+              <div className="flex gap-1 justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star 
+                    key={star} 
+                    className={`h-6 w-6 cursor-pointer transition-colors ${
+                      rating && rating >= star 
+                        ? 'text-yellow-500 fill-yellow-500' 
+                        : 'text-gray-300 hover:text-yellow-400'
+                    }`}
+                    onClick={() => handleRating(star)}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <Link to="/reports">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <BarChart2 className="h-4 w-4" />
+                  View Detailed Analytics
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from 'lucide-react';
 
 interface YieldFormProps {
   onPredict: (result: { yield: number; unit: string, id: string }) => void;
@@ -81,6 +82,8 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
     soilType: 'Loam',
     irrigationMethod: 'Drip',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState('');
 
   useEffect(() => {
     // Load saved form data from localStorage on component mount
@@ -107,70 +110,105 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       return;
     }
 
-    // Get base yield for crop and location
-    const baseYield = yieldPredictions[formData.cropType as keyof typeof yieldPredictions]?.[formData.location as keyof (typeof yieldPredictions)['Maize']] || 3000;
+    // Create loading effect
+    setIsLoading(true);
     
-    // Apply modifiers
-    const soilModifier = soilModifiers[formData.soilType as keyof typeof soilModifiers] || 1.0;
-    const irrigationModifier = irrigationModifiers[formData.irrigationMethod as keyof typeof irrigationModifiers] || 1.0;
+    // Simulate the backend processing with different loading stages
+    const loadingStages = [
+      "Connecting to prediction servers...",
+      `Analyzing ${formData.cropType} yield patterns...`,
+      `Processing soil conditions for ${formData.soilType}...`,
+      `Calculating irrigation effects for ${formData.irrigationMethod}...`,
+      "Running machine learning model...",
+      "Finalizing prediction results..."
+    ];
     
-    // Calculate final yield (with slight randomness but stable for same inputs)
-    const landSizeMultiplier = parseFloat(formData.landSize);
-    const predictedYield = baseYield * soilModifier * irrigationModifier * landSizeMultiplier;
-    const unit = 'kg/hectare';
+    let stageIndex = 0;
+    const stageInterval = setInterval(() => {
+      if (stageIndex < loadingStages.length) {
+        setLoadingStage(loadingStages[stageIndex]);
+        stageIndex++;
+      } else {
+        clearInterval(stageInterval);
+      }
+    }, 800);
 
-    // Save prediction to localStorage
-    const prediction = {
-      yield: predictedYield,
-      unit: unit,
-      location: formData.location,
-      landSize: formData.landSize,
-      crop: formData.cropType,
-      soil: formData.soilType,
-      irrigation: formData.irrigationMethod
-    };
-    
-    const savePrediction = (prediction: any) => {
-      // Add a predicted id, date, and null rating
-      const predictionWithMeta = {
-        ...prediction,
-        id: uuidv4(),
-        date: new Date().toISOString().split('T')[0],
-        rating: null
+    // Simulate backend delay
+    setTimeout(() => {
+      // Get base yield for crop and location
+      const baseYield = yieldPredictions[formData.cropType as keyof typeof yieldPredictions]?.[formData.location as keyof (typeof yieldPredictions)['Maize']] || 3000;
+      
+      // Apply modifiers
+      const soilModifier = soilModifiers[formData.soilType as keyof typeof soilModifiers] || 1.0;
+      const irrigationModifier = irrigationModifiers[formData.irrigationMethod as keyof typeof irrigationModifiers] || 1.0;
+      
+      // Calculate final yield (with slight randomness but stable for same inputs)
+      const landSizeMultiplier = parseFloat(formData.landSize);
+      const predictedYield = baseYield * soilModifier * irrigationModifier * landSizeMultiplier;
+      const unit = 'kg/hectare';
+
+      // Save prediction to localStorage
+      const prediction = {
+        yield: predictedYield,
+        unit: unit,
+        location: formData.location,
+        landSize: formData.landSize,
+        crop: formData.cropType,
+        soil: formData.soilType,
+        irrigation: formData.irrigationMethod
       };
       
-      // Get existing predictions or initialize empty array
-      const existingPredictions = JSON.parse(localStorage.getItem('predictions') || '[]');
-      
-      // Add new prediction to array
-      const updatedPredictions = [...existingPredictions, predictionWithMeta];
-      
-      // Save back to localStorage
-      localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
-      
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new Event('predictionsUpdated'));
-      
-      // Also save form data for reports
-      localStorage.setItem('lastFormData', JSON.stringify(formData));
-      
-      console.log('💾 Saved new prediction to storage:', predictionWithMeta);
-      console.log('📊 Storage now contains', updatedPredictions.length, 'predictions');
-      
-      return predictionWithMeta;
-    };
+      const savePrediction = (prediction: any) => {
+        // Add a predicted id, date, and null rating
+        const predictionWithMeta = {
+          ...prediction,
+          id: uuidv4(),
+          date: new Date().toISOString().split('T')[0],
+          rating: null
+        };
+        
+        // Get existing predictions or initialize empty array
+        const existingPredictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        
+        // Add new prediction to array
+        const updatedPredictions = [...existingPredictions, predictionWithMeta];
+        
+        // Save back to localStorage
+        localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+        
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('predictionsUpdated'));
+        
+        // Also save form data for reports
+        localStorage.setItem('lastFormData', JSON.stringify(formData));
+        
+        console.log('💾 Saved new prediction to storage:', predictionWithMeta);
+        console.log('📊 Storage now contains', updatedPredictions.length, 'predictions');
+        
+        return predictionWithMeta;
+      };
 
-    const predictionWithMeta = savePrediction(prediction);
+      const predictionWithMeta = savePrediction(prediction);
 
-    // Pass the prediction result to the parent component
-    onPredict({ yield: predictedYield, unit: unit, id: predictionWithMeta.id });
+      // Clear loading state
+      clearInterval(stageInterval);
+      setIsLoading(false);
+      setLoadingStage('');
+
+      // Pass the prediction result to the parent component
+      onPredict({ yield: predictedYield, unit: unit, id: predictionWithMeta.id });
+    }, 5000); // 5 second delay to simulate backend processing
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="location">Location</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))} defaultValue={formData.location}>
+        <Select 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))} 
+          defaultValue={formData.location}
+          disabled={isLoading}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select location" />
           </SelectTrigger>
@@ -198,11 +236,16 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
           placeholder="Enter land size"
           min="0"
           step="0.1"
+          disabled={isLoading}
         />
       </div>
       <div>
         <Label htmlFor="cropType">Crop Type</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, cropType: value }))} defaultValue={formData.cropType}>
+        <Select 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, cropType: value }))} 
+          defaultValue={formData.cropType}
+          disabled={isLoading}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select crop type" />
           </SelectTrigger>
@@ -215,7 +258,11 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       </div>
       <div>
         <Label htmlFor="soilType">Soil Type</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, soilType: value }))} defaultValue={formData.soilType}>
+        <Select 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, soilType: value }))} 
+          defaultValue={formData.soilType}
+          disabled={isLoading}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select soil type" />
           </SelectTrigger>
@@ -231,7 +278,11 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       </div>
       <div>
         <Label htmlFor="irrigationMethod">Irrigation Method</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, irrigationMethod: value }))} defaultValue={formData.irrigationMethod}>
+        <Select 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, irrigationMethod: value }))} 
+          defaultValue={formData.irrigationMethod}
+          disabled={isLoading}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select irrigation method" />
           </SelectTrigger>
@@ -244,7 +295,22 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" className="w-full">Predict Yield</Button>
+      
+      {isLoading ? (
+        <div className="mt-4 py-2">
+          <div className="flex items-center gap-2 mb-2 text-primary animate-pulse">
+            <LoaderCircle className="h-5 w-5 animate-spin" />
+            <p className="text-sm">{loadingStage}</p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+            <div className="bg-primary h-2.5 rounded-full animate-pulse" style={{ width: '50%' }}></div>
+          </div>
+        </div>
+      ) : (
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          Predict Yield
+        </Button>
+      )}
     </form>
   );
 };
