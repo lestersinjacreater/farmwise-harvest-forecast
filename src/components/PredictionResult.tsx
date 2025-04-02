@@ -12,12 +12,14 @@ type PredictionResultProps = {
     yield: number;
     unit: string;
     id?: string;
+    confidenceLevel?: number;
   };
 };
 
 const PredictionResult = ({ prediction }: PredictionResultProps) => {
   const [rating, setRating] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [confidenceLevel, setConfidenceLevel] = useState<number>(prediction.confidenceLevel || 0);
   
   useEffect(() => {
     // Simulate loading of prediction results
@@ -38,8 +40,13 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
       }
     }
     
+    // Set confidence level
+    if (prediction.confidenceLevel) {
+      setConfidenceLevel(prediction.confidenceLevel);
+    }
+    
     return () => clearTimeout(timer);
-  }, [prediction.id]);
+  }, [prediction.id, prediction.confidenceLevel]);
 
   const handleRating = (rating: number) => {
     if (!prediction.id) return;
@@ -96,6 +103,21 @@ const PredictionResult = ({ prediction }: PredictionResultProps) => {
             <div className="text-4xl font-bold text-farm-leaf mb-2">
               {formattedYield} <span className="text-2xl">{prediction.unit}</span>
             </div>
+            
+            {/* Confidence Level Indicator */}
+            <div className="mt-3 mb-4">
+              <p className="text-sm text-muted-foreground mb-1">Prediction Confidence</p>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-full max-w-[200px] bg-gray-200 h-2.5 rounded-full">
+                  <div 
+                    className="bg-farm-leaf h-2.5 rounded-full" 
+                    style={{ width: `${confidenceLevel}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{confidenceLevel}%</span>
+              </div>
+            </div>
+            
             <p className="text-sm text-muted-foreground">
               This prediction is based on your farm details and our machine learning model.
             </p>

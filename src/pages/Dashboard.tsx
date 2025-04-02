@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -12,13 +11,12 @@ import PastPredictions from '@/components/PastPredictions';
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [prediction, setPrediction] = useState<{ yield: number; unit: string, id?: string } | null>(null);
+  const [prediction, setPrediction] = useState<{ yield: number; unit: string, id?: string, confidenceLevel?: number } | null>(null);
   const [welcomeAnimation, setWelcomeAnimation] = useState(true);
   const [seasonalAlert, setSeasonalAlert] = useState("");
   const [hasPredictions, setHasPredictions] = useState(false);
   const [currentRating, setCurrentRating] = useState<number | null>(null);
 
-  // Redirect if not authenticated
   useEffect(() => {
     console.log('🔒 Checking authentication status...');
     if (!isAuthenticated) {
@@ -28,13 +26,11 @@ const Dashboard = () => {
       console.log('✅ User authenticated:', user?.email);
     }
     
-    // Animation timing
     setTimeout(() => {
       setWelcomeAnimation(false);
       console.log('🎬 Welcome animation completed');
     }, 1500);
 
-    // Check if predictions exist in localStorage
     const storedPredictions = localStorage.getItem('predictions');
     if (storedPredictions) {
       const parsedPredictions = JSON.parse(storedPredictions);
@@ -45,11 +41,9 @@ const Dashboard = () => {
     }
   }, [isAuthenticated, navigate, user?.email]);
 
-  // Set a random seasonal alert on page load
   useEffect(() => {
     console.log('📊 Fetching seasonal alerts from weather service API...');
     
-    // Simulate API delay
     setTimeout(() => {
       console.log('📡 Weather service data received');
       const alerts = [
@@ -65,28 +59,24 @@ const Dashboard = () => {
     }, 800);
   }, []);
 
-  const handlePrediction = (result: { yield: number; unit: string, id: string }) => {
+  const handlePrediction = (result: { yield: number; unit: string, id: string, confidenceLevel: number }) => {
     console.log('📈 Received prediction result from ML model:', result);
     setPrediction(result);
     setHasPredictions(true);
     setCurrentRating(null); // Reset rating for new prediction
   };
 
-  // Handle rating
   const handleRating = (rating: number) => {
     if (!prediction || !prediction.id) return;
     
-    // Get existing predictions
     const storedPredictions = localStorage.getItem('predictions');
     if (storedPredictions) {
       const predictions = JSON.parse(storedPredictions);
       
-      // Find the prediction with matching ID
       const predictionIndex = predictions.findIndex((p: any) => p.id === prediction.id);
       if (predictionIndex !== -1) {
         predictions[predictionIndex].rating = rating;
         
-        // Save back to localStorage
         localStorage.setItem('predictions', JSON.stringify(predictions));
         setCurrentRating(rating);
         
@@ -98,7 +88,6 @@ const Dashboard = () => {
     }
   };
 
-  // Current time-based greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
     console.log('⏰ Getting time-based greeting. Current hour:', hour);
@@ -108,7 +97,7 @@ const Dashboard = () => {
   };
 
   if (!isAuthenticated || !user) {
-    return null; // Don't render anything while redirecting
+    return null;
   }
 
   console.log('🔄 Rendering dashboard for user:', user.name);
@@ -119,7 +108,6 @@ const Dashboard = () => {
       
       <div className="pt-24 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Welcome section */}
           <div className="mb-12 relative overflow-hidden">
             <div
               className={`transition-all duration-1000 ${
@@ -143,9 +131,7 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Main content area */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Side panel with stats and tips */}
             <div className="lg:col-span-1 space-y-6">
               <div className="glass-panel rounded-xl p-6">
                 <h3 className="text-xl font-bold mb-4">Your Shamba Stats</h3>
@@ -158,10 +144,6 @@ const Dashboard = () => {
                     <span className="text-foreground/80">Email</span>
                     <span>{user.email}</span>
                   </div>
-                  {/* <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span className="text-foreground/80">Predictions</span>
-                    <span>{prediction ? '1' : '0'}</span>
-                  </div> */}
                   <div className="flex justify-between items-center">
                     <span className="text-foreground/80">Member Since</span>
                     <span>{new Date().toLocaleDateString()}</span>
@@ -208,7 +190,6 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Main yield prediction form and results */}
             <div className="lg:col-span-2 space-y-8">
               <div className="glass-panel rounded-xl p-6">
                 <h3 className="text-xl font-bold mb-6">Enter Your Farm Details</h3>
@@ -219,7 +200,6 @@ const Dashboard = () => {
                 <div className="glass-panel rounded-xl p-6">
                   <PredictionResult prediction={prediction} />
                   
-                  {/* Rating UI */}
                   <div className="mt-6 border-t pt-4">
                     <p className="mb-2 font-medium">Rate this prediction:</p>
                     <div className="flex gap-2">
@@ -243,7 +223,6 @@ const Dashboard = () => {
                 </div>
               )}
               
-              {/* Past Predictions Section - only show if predictions exist */}
               {hasPredictions && (
                 <div className="mt-8">
                   <PastPredictions />

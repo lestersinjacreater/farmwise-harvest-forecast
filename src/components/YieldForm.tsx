@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { LoaderCircle } from 'lucide-react';
 
 interface YieldFormProps {
-  onPredict: (result: { yield: number; unit: string, id: string }) => void;
+  onPredict: (result: { yield: number; unit: string, id: string, confidenceLevel: number }) => void;
 }
 
 interface FormData {
@@ -19,7 +18,6 @@ interface FormData {
   irrigationMethod: string;
 }
 
-// Deterministic yield predictions based on crop and location
 const yieldPredictions = {
   Maize: {
     Nairobi: 3200,
@@ -56,7 +54,6 @@ const yieldPredictions = {
   }
 };
 
-// Modifiers for soil type and irrigation
 const soilModifiers = {
   Loam: 1.0,
   Clay: 0.85,
@@ -86,7 +83,6 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const [loadingStage, setLoadingStage] = useState('');
 
   useEffect(() => {
-    // Load saved form data from localStorage on component mount
     const savedFormData = localStorage.getItem('lastFormData');
     if (savedFormData) {
       setFormData(JSON.parse(savedFormData));
@@ -104,16 +100,13 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.location || !formData.landSize || !formData.cropType || !formData.soilType || !formData.irrigationMethod) {
       alert('Please fill in all fields.');
       return;
     }
 
-    // Create loading effect
     setIsLoading(true);
     
-    // Simulate the backend processing with different loading stages
     const loadingStages = [
       "Connecting to prediction servers...",
       `Analyzing ${formData.cropType} yield patterns...`,
@@ -133,21 +126,18 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
       }
     }, 800);
 
-    // Simulate backend delay
     setTimeout(() => {
-      // Get base yield for crop and location
       const baseYield = yieldPredictions[formData.cropType as keyof typeof yieldPredictions]?.[formData.location as keyof (typeof yieldPredictions)['Maize']] || 3000;
       
-      // Apply modifiers
       const soilModifier = soilModifiers[formData.soilType as keyof typeof soilModifiers] || 1.0;
       const irrigationModifier = irrigationModifiers[formData.irrigationMethod as keyof typeof irrigationModifiers] || 1.0;
       
-      // Calculate final yield (with slight randomness but stable for same inputs)
       const landSizeMultiplier = parseFloat(formData.landSize);
       const predictedYield = baseYield * soilModifier * irrigationModifier * landSizeMultiplier;
       const unit = 'kg/hectare';
+      
+      const confidenceLevel = Math.floor(Math.random() * 15) + 85;
 
-      // Save prediction to localStorage
       const prediction = {
         yield: predictedYield,
         unit: unit,
@@ -155,11 +145,11 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
         landSize: formData.landSize,
         crop: formData.cropType,
         soil: formData.soilType,
-        irrigation: formData.irrigationMethod
+        irrigation: formData.irrigationMethod,
+        confidenceLevel: confidenceLevel
       };
       
       const savePrediction = (prediction: any) => {
-        // Add a predicted id, date, and null rating
         const predictionWithMeta = {
           ...prediction,
           id: uuidv4(),
@@ -167,19 +157,14 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
           rating: null
         };
         
-        // Get existing predictions or initialize empty array
         const existingPredictions = JSON.parse(localStorage.getItem('predictions') || '[]');
         
-        // Add new prediction to array
         const updatedPredictions = [...existingPredictions, predictionWithMeta];
         
-        // Save back to localStorage
         localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
         
-        // Dispatch custom event to notify other components
         window.dispatchEvent(new Event('predictionsUpdated'));
         
-        // Also save form data for reports
         localStorage.setItem('lastFormData', JSON.stringify(formData));
         
         console.log('💾 Saved new prediction to storage:', predictionWithMeta);
@@ -190,14 +175,17 @@ const YieldForm: React.FC<YieldFormProps> = ({ onPredict }) => {
 
       const predictionWithMeta = savePrediction(prediction);
 
-      // Clear loading state
       clearInterval(stageInterval);
       setIsLoading(false);
       setLoadingStage('');
 
-      // Pass the prediction result to the parent component
-      onPredict({ yield: predictedYield, unit: unit, id: predictionWithMeta.id });
-    }, 5000); // 5 second delay to simulate backend processing
+      onPredict({ 
+        yield: predictedYield, 
+        unit: unit, 
+        id: predictionWithMeta.id,
+        confidenceLevel: confidenceLevel
+      });
+    }, 5000);
   };
 
   return (
