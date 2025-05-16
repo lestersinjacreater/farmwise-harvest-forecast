@@ -75,30 +75,30 @@ const About = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  name: 'LESTER SINJA',
+                  name: 'Lester Sinja Watosia',
                   role: 'PA106/G/15053/21',
-                  bio: 'Final year softaware enginnering student at kirinyaga university .',
+                  bio: 'Final-year Software Engineering student at Kirinyaga University. Designed and developed both the frontend and backend of the system, ensuring a seamless and functional user experience across the entire application..',
                 },
                 {
-                  name: 'NAHASHON NJOROGE',
-                  role: 'PA106/G/14960/21',
-                  bio: 'Final year software engineering student at kirinyaga university .'
+                  name: 'Masese Gwako Mikeallan',
+  role: 'Student ID: PA106/G/15084/21',
+  bio: 'Led the development and training of the machine learning model, focusing on data preprocessing, feature engineering, and model evaluation to ensure optimal performance.'
                 },
-                {
-                  name: 'MASESE GWAKO MIKEALLAN',
-                  role: 'PA106/G/15084/21',
-                  bio: 'Final year software engineering student at kirinyaga university .'
-                },
-                {
-                  name: 'CHARLES MUNGAI',
-                  role: 'PA106/G/14949/21',
-                  bio: 'Final year software engineering student at kirinyaga university .'
-                },
-                {
-                  name: 'MYAKOBI ANN NJOKI',
-                  role: 'PA106/G/14976/21',
-                  bio: 'Final year software engineering student at kirinyaga university .'
-                }
+                // {
+                //   name: 'MASESE GWAKO MIKEALLAN',
+                //   role: 'PA106/G/15084/21',
+                //   bio: 'Final year software engineering student at kirinyaga university .'
+                // },
+                // {
+                //   name: 'CHARLES MUNGAI',
+                //   role: 'PA106/G/14949/21',
+                //   bio: 'Final year software engineering student at kirinyaga university .'
+                // },
+                // {
+                //   name: 'MYAKOBI ANN NJOKI',
+                //   role: 'PA106/G/14976/21',
+                //   bio: 'Final year software engineering student at kirinyaga university .'
+                // }
               ].map((member, index) => (
                 <div key={index} className="glass-panel rounded-xl p-6 text-center animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
                   <div className="w-20 h-20 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
