@@ -77,7 +77,7 @@ const About = () => {
                 {
                   name: 'Lester Sinja Watosia',
                   role: 'software engineer',
-                  bio: 'Final-year Software Engineering student at Kirinyaga University. Designed and developed both the frontend and backend of the system, ensuring a seamless and functional user experience across the entire application..',
+                  bio: 'Designed and developed both the frontend and backend of the system, ensuring a seamless and functional user experience across the entire application..',
                 },
                 {
                   name: 'Masese Gwako Mikeallan',
