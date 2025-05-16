@@ -76,12 +76,12 @@ const About = () => {
               {[
                 {
                   name: 'Lester Sinja Watosia',
-                  role: 'PA106/G/15053/21',
+                  role: 'software engineer',
                   bio: 'Final-year Software Engineering student at Kirinyaga University. Designed and developed both the frontend and backend of the system, ensuring a seamless and functional user experience across the entire application..',
                 },
                 {
                   name: 'Masese Gwako Mikeallan',
-  role: 'Student ID: PA106/G/15084/21',
+  role: 'software engineer',
   bio: 'Led the development and training of the machine learning model, focusing on data preprocessing, feature engineering, and model evaluation to ensure optimal performance.'
                 },
                 // {
